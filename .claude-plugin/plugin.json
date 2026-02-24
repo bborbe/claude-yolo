@@ -1,0 +1,19 @@
+{
+  "name": "claude-yolo",
+  "description": "Isolated Claude Code execution with prompt-based task handoffs. Plan on laptop, execute in Docker container.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Benjamin Borbe"
+  },
+  "homepage": "https://github.com/bborbe/claude-yolo",
+  "repository": "https://github.com/bborbe/claude-yolo",
+  "license": "MIT",
+  "keywords": [
+    "docker",
+    "isolation",
+    "prompt-workflow",
+    "create-prompt",
+    "run-prompt",
+    "yolo-mode"
+  ]
+}
