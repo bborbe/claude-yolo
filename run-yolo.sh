@@ -20,6 +20,6 @@ docker run -it --rm \
     --cap-add=NET_ADMIN \
     --cap-add=NET_RAW \
     -v "$GIT_ROOT:/workspace" \
-    -v ~/.claude-yolo:/home/node/.claude:rw \
+    -v "$HOME/.claude-yolo:/home/node/.claude" \
     -v "$HOME/go/pkg:/home/node/go/pkg" \
     claude-yolo
