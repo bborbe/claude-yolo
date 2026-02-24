@@ -1,4 +1,4 @@
-FROM node:20
+FROM node:22
 
 ARG TZ
 ENV TZ="${TZ:-Europe/Berlin}"
@@ -42,6 +42,7 @@ ENV PATH=$PATH:/usr/local/share/npm-global/bin
 ENV DEVCONTAINER=true
 ENV SHELL=/bin/zsh
 ENV CLAUDE_CONFIG_DIR=/home/node/.claude
+ENV HOME=/home/node
 
 RUN mkdir -p /workspace /home/node/.claude /home/node/go && \
     chown -R node:node /workspace /home/node/.claude /home/node/go

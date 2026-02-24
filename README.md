@@ -4,27 +4,11 @@ Isolated Claude Code execution with prompt-based task handoffs. Run coding tasks
 
 ## What This Is
 
-A workflow separator for Claude Code:
-- **Laptop (supervised)**: Planning, kubectl, git operations, deployments
-- **Docker (--dangerous)**: Isolated coding with minimal permission prompts
-- **Handoff mechanism**: `/create-prompt` → container execution → review/merge
+Isolated Docker environment for running Claude Code with restricted network access and proper isolation from production systems.
 
 ## Installation
 
-### 1. Install the plugin
-
-```bash
-# Add local marketplace
-claude plugin marketplace add ~/path/to/claude-yolo
-
-# Or from GitHub (once published)
-claude plugin marketplace add bborbe/claude-yolo
-
-# Install plugin (makes /create-prompt and /run-prompt available)
-claude plugin install claude-yolo
-```
-
-### 2. Build the Docker image
+### Build the Docker image
 
 ```bash
 make build
@@ -32,46 +16,47 @@ make build
 
 ## Usage
 
-### Workflow
+### Usage
 
 ```bash
-# 1. Plan on laptop (from anywhere, e.g., Obsidian vault)
-claude
-> /create-prompt "add retry logic to notification service"
-# → auto-discovers project: trading/core/signal/notification
-# → saves to ~/Documents/workspaces/trading/prompts/001-add-retry.md
+# Start container for a project
+cd ~/Documents/workspaces/my-app
+./path/to/run-yolo.sh
 
-# 2. Execute in container (isolated, low-friction)
-docker run -it --rm \
-  --cap-add=NET_ADMIN --cap-add=NET_RAW \
-  -v ~/Documents/workspaces/trading:/workspace \
-  -v ~/.claude.json:/home/node/.claude.json:ro \
-  claude-yolo
-
-# Inside container (CWD = git root):
-/run-prompt 001
-# → finds ./prompts/001-add-retry.md
-# → implements, tests, commits to feature branch
-
-# 3. Review and deploy on laptop
-cd ~/Documents/workspaces/trading
-git diff feature-branch
-gh pr create
+# Inside container:
+# - Work at git root (/workspace)
+# - Claude Code available with --dangerously-skip-permissions
+# - Network restricted to allowed domains only
 ```
 
-### Commands
+Or manually with docker:
+```bash
+docker run -it --rm \
+  --cap-add=NET_ADMIN --cap-add=NET_RAW \
+  -v ~/Documents/workspaces/my-app:/workspace \
+  -v ~/.claude.json:/home/node/.claude.json:ro \
+  claude-yolo
+```
 
-**`/create-prompt <task description>`**
-- Discovers target project from task description
-- Finds git root automatically
-- Saves to `{git_root}/prompts/NNN-name.md`
-- Prompts are version-controlled with the project
+### Helper Script
 
-**`/run-prompt <number|name>`**
-- Searches `./prompts/` (CWD) first (works in Docker)
-- Falls back to workspace scan if not found
-- Executes prompt in fresh sub-task context
-- Archives to `{git_root}/prompts/completed/` when done
+**`run-yolo.sh [path]`**
+- Auto-detects git root from given path (or CWD)
+- Mounts git root as `/workspace`
+- Starts container at git root
+- Passes through Go module cache for faster builds
+
+```bash
+# From project root
+./path/to/run-yolo.sh
+
+# From subdirectory
+cd src/api/client
+./path/to/run-yolo.sh
+
+# Explicit path
+./path/to/run-yolo.sh ~/Documents/workspaces/my-app
+```
 
 ## Features
 
@@ -82,20 +67,15 @@ Container runs with restricted network access via iptables:
 - ❌ Blocked: Everything else (example.com fails)
 - Requires `--cap-add=NET_ADMIN --cap-add=NET_RAW`
 
-### Git-Root Awareness
+### Git-Root Mounting
 
-Prompts live at the git repository root:
+Container always works from git root:
 ```
-trading/
-├── prompts/
-│   ├── 001-add-retry.md
-│   ├── 002-fix-bug.md
-│   └── completed/
-├── core/signal/notification/  ← actual changes
-└── ...
+my-app/
+├── src/
+├── go.mod
+└── ...  ← mounted as /workspace in container
 ```
-
-One prompt queue per repo. No global state.
 
 ### Docker Isolation
 
@@ -118,16 +98,12 @@ Edit `Makefile` to customize:
 
 ```
 claude-yolo/
-├── .claude-plugin/         # Plugin manifests
-│   ├── marketplace.json
-│   └── plugin.json
-├── commands/               # Claude Code slash commands
-│   ├── create-prompt.md
-│   └── run-prompt.md
 ├── Dockerfile             # Container definition
 ├── entrypoint.sh          # Container init
 ├── init-firewall.sh       # Network restrictions
-└── Makefile              # Build/run helpers
+├── run-yolo.sh            # Helper script
+├── Makefile               # Build/run helpers
+└── README.md
 ```
 
 ## License
