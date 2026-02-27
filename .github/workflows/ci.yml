@@ -14,5 +14,5 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Run shellcheck
-        run: make test
+      - name: Run precommit checks
+        run: make precommit

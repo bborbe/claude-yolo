@@ -11,4 +11,6 @@ test: check
 check:
 	shellcheck *.sh
 
-.PHONY: build run test check
+precommit: check
+
+.PHONY: build run test check precommit
