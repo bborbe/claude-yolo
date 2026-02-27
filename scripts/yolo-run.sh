@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Usage: run-yolo.sh [path] ["prompt"]
+# Usage: yolo-run.sh [path] ["prompt"]
 # If no path given, use current directory
 # If prompt given, run one-shot mode (execute prompt and exit)
 

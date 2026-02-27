@@ -66,7 +66,7 @@ Saves to: `{project}/prompts/001-description.md`
 
 **2. Execute with YOLO**:
 ```bash
-./yolo-prompt.sh ~/Documents/workspaces/my-app 001
+./scripts/yolo-prompt.sh ~/Documents/workspaces/my-app 001
 ```
 
 **3. Press Enter** at prompt dialog (current limitation)
@@ -94,14 +94,14 @@ Start an interactive Claude Code session in auto-approve mode:
 
 ```bash
 # From current directory
-./run-yolo.sh
+./scripts/yolo-run.sh
 
 # From specific project
-./run-yolo.sh ~/Documents/workspaces/my-app
+./scripts/yolo-run.sh ~/Documents/workspaces/my-app
 
 # From subdirectory (auto-detects git root)
 cd src/api/client
-./run-yolo.sh
+./scripts/yolo-run.sh
 ```
 
 Inside container:
@@ -116,13 +116,13 @@ Execute a prompt and exit automatically:
 
 ```bash
 # Inline prompt
-./run-yolo.sh "implement OAuth2 login with JWT tokens"
+./scripts/yolo-run.sh "implement OAuth2 login with JWT tokens"
 
 # Prompt for specific project
-./run-yolo.sh ~/Documents/workspaces/my-app "add user authentication"
+./scripts/yolo-run.sh ~/Documents/workspaces/my-app "add user authentication"
 
 # Multi-line prompt
-./run-yolo.sh "$(cat <<'EOF'
+./scripts/yolo-run.sh "$(cat <<'EOF'
 Implement the following feature:
 - Add REST API endpoint /api/users
 - Add validation middleware
@@ -131,7 +131,7 @@ EOF
 )"
 
 # From file
-./run-yolo.sh "$(cat task-spec.md)"
+./scripts/yolo-run.sh "$(cat task-spec.md)"
 ```
 
 **Use cases:**
@@ -142,7 +142,7 @@ EOF
 
 ### Helper Script
 
-**`run-yolo.sh [path] ["prompt"]`**
+**`yolo-run.sh [path] ["prompt"]`**
 
 **Arguments:**
 - `path` (optional): Project directory or subdirectory (defaults to CWD)
@@ -159,16 +159,16 @@ EOF
 
 ```bash
 # Interactive mode
-./run-yolo.sh                                    # Current project
-./run-yolo.sh ~/Documents/workspaces/my-app     # Specific project
+./scripts/yolo-run.sh                                    # Current project
+./scripts/yolo-run.sh ~/Documents/workspaces/my-app     # Specific project
 
 # One-shot mode
-./run-yolo.sh "add logging middleware"                              # Current project
-./run-yolo.sh ~/Documents/workspaces/my-app "refactor auth module"  # Specific project
+./scripts/yolo-run.sh "add logging middleware"                              # Current project
+./scripts/yolo-run.sh ~/Documents/workspaces/my-app "refactor auth module"  # Specific project
 
 # From task file
 TASK=$(cat ~/Documents/Obsidian/Personal/24\ Tasks/Build\ Feature.md)
-./run-yolo.sh ~/Documents/workspaces/my-app "$TASK"
+./scripts/yolo-run.sh ~/Documents/workspaces/my-app "$TASK"
 ```
 
 ### Manual Docker Run
@@ -228,7 +228,7 @@ claude-yolo/
 ├── Dockerfile             # Container definition
 ├── entrypoint.sh          # Container init
 ├── init-firewall.sh       # Network restrictions
-├── run-yolo.sh            # Launch container (interactive or one-shot)
+├── yolo-run.sh            # Launch container (interactive or one-shot)
 ├── yolo-prompt.sh         # Execute prompts via /run-prompt
 ├── examples/
 │   └── CLAUDE.md          # Sample workflow configuration
