@@ -26,7 +26,8 @@ RUN --mount=type=cache,target=/var/cache/apt \
     aggregate \
     jq \
     ripgrep \
-    screen
+    screen \
+    expect
 
 # Install Trivy
 RUN --mount=type=cache,target=/var/cache/apt \
