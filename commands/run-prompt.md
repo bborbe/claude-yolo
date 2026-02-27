@@ -1,8 +1,8 @@
 ---
 name: run-prompt
-description: Delegate one or more prompts to fresh sub-task contexts with parallel or sequential execution
-argument-hint: <prompt-number(s)-or-path> [--parallel|--sequential] [--haiku|--sonnet|--opus]
-allowed-tools: [Read, Task, Bash(ls:*), Bash(mv:*), Bash(git:*), Bash(find:*), Bash(mkdir:*), Glob]
+description: Execute prompt directly in YOLO container (simplified for one-shot headless execution)
+argument-hint: <prompt-number-or-path>
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
 <!--
@@ -15,7 +15,9 @@ Git status: !`git status --short`
 </context>
 
 <objective>
-Execute one or more prompts as delegated sub-tasks with fresh context. Supports single prompt execution, parallel execution of multiple independent prompts, and sequential execution of dependent prompts.
+Execute a single prompt directly in YOLO container without sub-agent delegation.
+
+**YOLO-specific simplification:** Since the container runs headless and exits after execution, there's no benefit to spawning a Task agent. Execute the prompt directly for faster, simpler execution.
 
 Prompts are stored at the **git root** of their target project: `{git_root}/prompts/`
 </objective>
@@ -40,26 +42,14 @@ Prompts are stored at the **git root** of their target project: `{git_root}/prom
 <input>
 The user will specify which prompt(s) to run via $ARGUMENTS, which can be:
 
-**Single prompt:**
+**Single prompt (YOLO supports one prompt at a time):**
 
 - Empty (no arguments): Run the most recently created prompt
 - A prompt number (e.g., "001", "5", "42")
 - A partial filename (e.g., "user-auth", "dashboard")
 - A full path (e.g., "~/Documents/workspaces/trading/prompts/005")
 
-**Multiple prompts:**
-
-- Multiple numbers (e.g., "005 006 007")
-- Multiple paths (e.g., ".../trading/prompts/005 .../trading/prompts/006")
-- With execution flag: "005 006 007 --parallel" or "005 006 007 --sequential"
-- If no flag specified with multiple prompts, default to --sequential for safety
-
-**Model selection (optional):**
-
-- `--haiku`: Run with haiku model (fast, cost-effective for simple tasks)
-- `--sonnet`: Run with sonnet model (balanced for standard tasks)
-- `--opus`: Run with opus model (thorough for complex tasks)
-- If no model flag specified, inherits from parent context
+**Note:** Model selection flags (--haiku, --sonnet, --opus) are not supported in YOLO. The container launches with the model specified in the Dockerfile.
 </input>
 
 <process>
@@ -98,47 +88,26 @@ Store as `$PROJECT_ROOT` — this is where the sub-task should work.
 <step3_execute>
 <single_prompt>
 
+**YOLO Mode: Direct Execution (No Sub-Agent)**
+
+For YOLO container (headless, one-shot execution), execute prompt directly without Task agent:
+
 1. Read the complete contents of the prompt file
-2. Delegate as sub-task using Task tool with subagent_type="general-purpose"
-   - If model flag was specified (--haiku, --sonnet, --opus), pass model parameter to Task tool
-   - If no model flag, omit model parameter (inherits from parent)
-   - Include in the task prompt: "Working directory: $PROJECT_ROOT" so the agent works from git root
-3. Wait for completion
-4. Archive prompt to `$PROJECT_ROOT/prompts/completed/` with metadata
-5. Return results
+2. Change working directory to `$PROJECT_ROOT`: `cd $PROJECT_ROOT`
+3. Execute the prompt content directly (you are already the agent)
+4. Follow all instructions in the prompt
+5. Archive prompt to `$PROJECT_ROOT/prompts/completed/` with timestamp metadata
+6. Report completion summary
+
+**Note:** Model flags (--haiku, --sonnet, --opus) are ignored in YOLO mode since the container already launched with a specific model.
+
+**Why no sub-agent in YOLO:**
+- Container is ephemeral (context discarded after execution)
+- No token savings benefit from Task isolation
+- Simpler execution path
+- Faster startup
 </single_prompt>
 
-<parallel_execution>
-
-1. Read all prompt files
-2. **Spawn all Task tools in a SINGLE MESSAGE** (this is critical for parallel execution):
-   - If model flag was specified, pass model parameter to each Task tool
-   - If no model flag, omit model parameter (inherits from parent)
-   - Include working directory in each task prompt
-   <example>
-   Use Task tool for prompt 005 (with model if specified)
-   Use Task tool for prompt 006 (with model if specified)
-   Use Task tool for prompt 007 (with model if specified)
-   (All in one message with multiple tool calls)
-   </example>
-3. Wait for ALL to complete
-4. Archive all prompts with metadata
-5. Return consolidated results
-</parallel_execution>
-
-<sequential_execution>
-
-1. Read first prompt file
-2. Spawn Task tool for first prompt (with model parameter if specified)
-3. Wait for completion
-4. Archive first prompt
-5. Read second prompt file
-6. Spawn Task tool for second prompt (with model parameter if specified)
-7. Wait for completion
-8. Archive second prompt
-9. Repeat for remaining prompts (using same model if specified)
-10. Return consolidated results
-</sequential_execution>
 </step3_execute>
 </process>
 
@@ -147,52 +116,17 @@ By delegating to a sub-task, the actual implementation work happens in fresh con
 </context_strategy>
 
 <output>
-<single_prompt_output>
-✓ Executed: $PROJECT_ROOT/prompts/005-implement-feature.md
+✓ Executed: $PROJECT_ROOT/prompts/001-implement-feature.md
 ✓ Project: $PROJECT_ROOT
-✓ Model: haiku (or sonnet/opus if specified, or "inherited" if not specified)
-✓ Archived to: $PROJECT_ROOT/prompts/completed/005-implement-feature.md
+✓ Archived to: $PROJECT_ROOT/prompts/completed/001-implement-feature-TIMESTAMP.md
 
 <results>
-[Summary of what the sub-task accomplished]
+[Summary of what was implemented, tests run, verification completed]
 </results>
-</single_prompt_output>
-
-<parallel_output>
-✓ Executed in PARALLEL:
-
-- $PROJECT_ROOT/prompts/005-implement-auth.md
-- $PROJECT_ROOT/prompts/006-implement-api.md
-- $PROJECT_ROOT/prompts/007-implement-ui.md
-
-✓ All archived to $PROJECT_ROOT/prompts/completed/
-
-<results>
-[Consolidated summary of all sub-task results]
-</results>
-</parallel_output>
-
-<sequential_output>
-✓ Executed SEQUENTIALLY:
-
-1. $PROJECT_ROOT/prompts/005-setup-database.md → Success
-2. $PROJECT_ROOT/prompts/006-create-migrations.md → Success
-3. $PROJECT_ROOT/prompts/007-seed-data.md → Success
-
-✓ All archived to $PROJECT_ROOT/prompts/completed/
-
-<results>
-[Consolidated summary showing progression through each step]
-</results>
-</sequential_output>
 </output>
 
-<critical_notes>
-
-- For parallel execution: ALL Task tool calls MUST be in a single message
-- For sequential execution: Wait for each Task to complete before starting next
-- Archive prompts only after successful completion
-- If any prompt fails, stop sequential execution and report error
-- Provide clear, consolidated results for multiple prompt execution
-- Sub-tasks should always work from $PROJECT_ROOT (git root), not subdirectories
-</critical_notes>
+<notes>
+- Archive prompts after successful completion with timestamp
+- Always work from $PROJECT_ROOT (git root), not subdirectories
+- YOLO executes single prompts only (no parallel/sequential support)
+</notes>

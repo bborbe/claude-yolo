@@ -4,10 +4,10 @@ build:
 	docker build -t $(IMAGE) .
 
 run:
-	bash run-yolo.sh
+	bash scripts/yolo-run.sh
 
 check:
-	shellcheck *.sh
+	shellcheck files/*.sh scripts/*.sh
 
 test: check
 

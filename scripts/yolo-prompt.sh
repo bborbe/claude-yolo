@@ -39,4 +39,4 @@ PROMPT_CONTENT="/run-prompt $PROMPT_ID"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Execute YOLO
-"$SCRIPT_DIR/run-yolo.sh" "$GIT_ROOT" "$PROMPT_CONTENT"
+"$SCRIPT_DIR/yolo-run.sh" "$GIT_ROOT" "$PROMPT_CONTENT"
