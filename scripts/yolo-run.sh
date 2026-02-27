@@ -74,6 +74,10 @@ echo ""
 # Kill container on script exit/interrupt and remove lock file
 trap 'docker kill '"$CONTAINER_ID"' 2>/dev/null; rm -f '"'$LOCK_FILE'" EXIT INT TERM
 
-# Follow logs and wait for completion
-docker logs -f "$CONTAINER_ID"
-docker wait "$CONTAINER_ID" >/dev/null 2>&1
+# Interactive: attach (can type), One-shot: follow logs
+if [ -z "$PROMPT" ]; then
+    docker attach "$CONTAINER_ID"
+else
+    docker logs -f "$CONTAINER_ID"
+    docker wait "$CONTAINER_ID" >/dev/null 2>&1
+fi
