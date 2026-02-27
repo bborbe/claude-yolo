@@ -1,16 +1,34 @@
-IMAGE := claude-yolo
+REGISTRY ?= docker.io
+IMAGE ?= bborbe/claude-yolo
+VERSION ?= latest
 
-build:
-	docker build -t $(IMAGE) .
+.PHONY: check
+precommit: check
 
+.PHONY: run
 run:
 	bash scripts/yolo-run.sh
 
+.PHONY: check
 check:
 	shellcheck files/*.sh scripts/*.sh
 
+.PHONY: test
 test: check
 
-precommit: check
+.PHONY: build
+build:
+	DOCKER_BUILDKIT=1 docker build \
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		-t $(REGISTRY)/$(IMAGE):$(VERSION) \
+		-f Dockerfile \
+		.
 
-.PHONY: build run check test precommit
+.PHONY: upload
+upload:
+	docker push $(REGISTRY)/$(IMAGE):$(VERSION)
+
+.PHONY: clean
+clean:
+	docker rmi $(REGISTRY)/$(IMAGE):$(VERSION) || true
+	docker rmi openclaw:localclaw || true

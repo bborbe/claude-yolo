@@ -28,6 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `entrypoint.sh` detects prompt mode and executes accordingly
 - One-shot mode streams output to both terminal and timestamped log file
 - README updated with installation steps, directory structure diagrams, and architecture explanation
+- Simplified container execution with `docker run -dit` for full interactivity
+- Container now supports `docker attach` for live interaction (detach with Ctrl+P Ctrl+Q)
+- Display container ID and attach instructions on startup
+
+### Fixed
+- Lock file prevents parallel YOLO execution in same directory
+- Proper cleanup of lock file and container on script exit/interrupt
+- Shellcheck warnings in trap and variable quoting
 
 ### Use Cases
 - Automated task execution from spec files

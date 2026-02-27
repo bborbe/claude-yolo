@@ -2,14 +2,17 @@
 set -euo pipefail
 
 # Firewall
-sudo /usr/local/bin/init-firewall.sh
+if [ "${DEBUG:-0}" = "1" ]; then
+    sudo /usr/local/bin/init-firewall.sh
+else
+    sudo /usr/local/bin/init-firewall.sh > /dev/null 2>&1
+fi
 
 # Check for prompt
 if [ -n "${YOLO_PROMPT:-}" ]; then
-    # Use script to create pseudo-TTY for Claude output
     echo "Starting headless session..."
-    echo "${YOLO_PROMPT}" | claude --dangerously-skip-permissions --model claude-sonnet-4-5
-    exit "${PIPESTATUS[0]}"
+    exec claude -p "${YOLO_PROMPT}" --dangerously-skip-permissions --model claude-sonnet-4-5 --output-format stream-json --verbose \
+        | python3 /usr/local/bin/stream-formatter.py
 else
     # Interactive mode
     echo "Starting interactive session..."
