@@ -38,14 +38,16 @@ fi
 # Check for existing YOLO execution in this directory
 LOCK_FILE="$GIT_ROOT/.yolo-lock"
 if [ -f "$LOCK_FILE" ]; then
-    echo "ERROR: YOLO already running in $GIT_ROOT"
-    echo "Lock file: $LOCK_FILE"
-    echo "If no YOLO is running, remove lock file: rm $LOCK_FILE"
-    exit 1
+    OLD_CONTAINER=$(cat "$LOCK_FILE" 2>/dev/null || true)
+    if [ -n "$OLD_CONTAINER" ] && docker inspect "$OLD_CONTAINER" >/dev/null 2>&1; then
+        echo "ERROR: YOLO already running in $GIT_ROOT"
+        echo "Container: $OLD_CONTAINER"
+        echo "To kill: docker kill $OLD_CONTAINER"
+        exit 1
+    fi
+    echo "Removing stale lock file (container no longer running)"
+    rm -f "$LOCK_FILE"
 fi
-
-# Create lock file - will be removed when container exits
-touch "$LOCK_FILE"
 
 echo "Starting claude-yolo container..."
 
@@ -58,6 +60,9 @@ CONTAINER_ID=$(docker run -dit --rm \
     -v "$HOME/.claude-yolo:/home/node/.claude" \
     -v "$HOME/go/pkg:/home/node/go/pkg" \
     docker.io/bborbe/claude-yolo:latest)
+
+# Write container ID to lock file
+echo "$CONTAINER_ID" > "$LOCK_FILE"
 
 echo "Container ID: $CONTAINER_ID"
 echo ""

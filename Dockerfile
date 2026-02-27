@@ -63,6 +63,7 @@ RUN mkdir -p /workspace /home/node/.claude /home/node/go && \
 # Scripts (require --cap-add=NET_ADMIN --cap-add=NET_RAW --cap-add=SYS_ADMIN at runtime)
 COPY files/init-firewall.sh /usr/local/bin/init-firewall.sh
 COPY files/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY files/stream-formatter.py /usr/local/bin/stream-formatter.py
 RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/entrypoint.sh && \
     echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
     chmod 0440 /etc/sudoers.d/node-firewall
