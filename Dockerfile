@@ -6,7 +6,9 @@ ENV TZ="${TZ:-Europe/Berlin}"
 ARG CLAUDE_CODE_VERSION=latest
 
 # Install dev tools + firewall deps
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt/lists \
+    apt-get update && apt-get install -y --no-install-recommends \
     less \
     git \
     curl \
@@ -23,7 +25,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dnsutils \
     aggregate \
     jq \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    ripgrep \
+    screen
+
+# Install Trivy
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt/lists \
+    wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor -o /usr/share/keyrings/trivy.gpg && \
+    . /etc/os-release && \
+    echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/trivy.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends trivy
 
 # Go
 ARG GO_VERSION=1.26.0

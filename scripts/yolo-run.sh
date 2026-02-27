@@ -35,21 +35,40 @@ else
     echo "Mode: Interactive"
 fi
 
-echo "Starting claude-yolo container..."
-
-# Detect TTY for docker flags
-if [ -t 0 ]; then
-    DOCKER_FLAGS="-it"
-else
-    DOCKER_FLAGS="-i"
+# Check for existing YOLO execution in this directory
+LOCK_FILE="$GIT_ROOT/.yolo-lock"
+if [ -f "$LOCK_FILE" ]; then
+    echo "ERROR: YOLO already running in $GIT_ROOT"
+    echo "Lock file: $LOCK_FILE"
+    echo "If no YOLO is running, remove lock file: rm $LOCK_FILE"
+    exit 1
 fi
 
-# Run container with git root mounted (auto-generated name for parallel instances)
-docker run $DOCKER_FLAGS --rm \
+# Create lock file - will be removed when container exits
+touch "$LOCK_FILE"
+
+echo "Starting claude-yolo container..."
+
+# Run container in background with full interactivity
+CONTAINER_ID=$(docker run -dit --rm \
     --cap-add=NET_ADMIN \
     --cap-add=NET_RAW \
     -e YOLO_PROMPT="$PROMPT" \
     -v "$GIT_ROOT:/workspace" \
     -v "$HOME/.claude-yolo:/home/node/.claude" \
     -v "$HOME/go/pkg:/home/node/go/pkg" \
-    claude-yolo
+    docker.io/bborbe/claude-yolo:latest)
+
+echo "Container ID: $CONTAINER_ID"
+echo ""
+echo "To attach and interact:  docker attach $CONTAINER_ID"
+echo "To detach while inside:  Ctrl+P Ctrl+Q"
+echo "To view logs:            docker logs -f $CONTAINER_ID"
+echo ""
+
+# Kill container on script exit/interrupt and remove lock file
+trap 'docker kill '"$CONTAINER_ID"' 2>/dev/null; rm -f '"'$LOCK_FILE'" EXIT INT TERM
+
+# Follow logs and wait for completion
+docker logs -f "$CONTAINER_ID"
+docker wait "$CONTAINER_ID" >/dev/null 2>&1
