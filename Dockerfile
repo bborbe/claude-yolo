@@ -27,7 +27,20 @@ RUN --mount=type=cache,target=/var/cache/apt \
     jq \
     ripgrep \
     screen \
-    expect
+    expect \
+	shellcheck \
+	tree \
+	fd-find \
+	python3-pip
+
+# Create fd symlink for fd-find
+RUN ln -s /usr/bin/fdfind /usr/local/bin/fd
+
+# Get the binary from the official image
+COPY --from=mikefarah/yq:latest /usr/bin/yq /usr/local/bin/yq
+
+# If you need it to be executable (it usually is by default)
+RUN chmod +x /usr/local/bin/yq
 
 # Install Trivy
 RUN --mount=type=cache,target=/var/cache/apt \
@@ -69,6 +82,11 @@ RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/entrypoint.sh && \
     chmod 0440 /etc/sudoers.d/node-firewall
 
 USER node
+
+RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
+  go install github.com/onsi/ginkgo/v2/ginkgo@latest && \
+  go install github.com/maxbrunsfeld/counterfeiter/v6@latest && \
+  go install golang.org/x/tools/cmd/goimports@latest
 
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
