@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `yolo-prompt.sh` helper script for executing prompts by number
 - Installation and setup documentation in README
 - Attribution to taches-cc-resources in slash command files
+- CI workflow with shellcheck validation (`make test`)
+- Claude Code workflow for @claude mentions in PRs/issues
+- `make test` and `make check` targets for shellcheck validation
 
 ### Changed
 - `run-yolo.sh` now accepts optional prompt argument for one-shot execution
