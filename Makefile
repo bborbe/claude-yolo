@@ -6,11 +6,11 @@ build:
 run:
 	bash run-yolo.sh
 
-test: check
-
 check:
 	shellcheck *.sh
 
+test: check
+
 precommit: check
 
-.PHONY: build run test check precommit
+.PHONY: build run check test precommit

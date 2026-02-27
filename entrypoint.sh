@@ -6,9 +6,10 @@ sudo /usr/local/bin/init-firewall.sh
 
 # Check for prompt
 if [ -n "${YOLO_PROMPT:-}" ]; then
-    # One-shot mode: run prompt and exit
-    echo "Running one-shot prompt..."
-    exec claude --dangerously-skip-permissions --model claude-sonnet-4-5 -p "$YOLO_PROMPT"
+    # Use script to create pseudo-TTY for Claude output
+    echo "Starting headless session..."
+    echo "${YOLO_PROMPT}" | claude --dangerously-skip-permissions --model claude-sonnet-4-5
+    exit ${PIPESTATUS[0]}
 else
     # Interactive mode
     echo "Starting interactive session..."

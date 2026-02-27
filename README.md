@@ -8,13 +8,85 @@ Isolated Docker environment for running Claude Code with restricted network acce
 
 ## Installation
 
-### Build the Docker image
+### 1. Build the Docker image
 
 ```bash
 make build
 ```
 
+### 2. Set up `~/.claude-yolo` directory
+
+YOLO uses a **separate** Claude Code config directory (`~/.claude-yolo`) isolated from your main `~/.claude` config. This keeps YOLO's auto-approve workflow separate from your normal Claude sessions.
+
+```bash
+# Create YOLO config directory
+mkdir -p ~/.claude-yolo/commands
+
+# Copy sample CLAUDE.md (workflow instructions)
+cp examples/CLAUDE.md ~/.claude-yolo/
+
+# Optional: Install slash commands from claude-yolo-plugin
+# See: https://github.com/bborbe/claude-yolo-plugin
+```
+
+**What's in `~/.claude-yolo`?**
+
+```
+~/.claude-yolo/
+├── CLAUDE.md           # Workflow instructions for YOLO
+├── commands/           # Slash commands available in YOLO
+│   └── run-prompt.md   # Execute prompts (from plugin)
+└── memory/             # Optional: YOLO-specific memory
+```
+
+**Why separate from `~/.claude`?**
+- Different workflow (auto-approve vs supervised)
+- Different constraints (no attribution, specific git patterns)
+- Isolation from your main Claude config
+- Safe experimentation
+
+**How it's mounted:**
+```bash
+-v ~/.claude-yolo:/home/node/.claude
+```
+
+Inside container, YOLO sees `~/.claude-yolo` as `/home/node/.claude` and reads `CLAUDE.md` automatically.
+
 ## Usage
+
+### Recommended: Prompt-Based Workflow
+
+The cleanest way to use YOLO is with structured prompts:
+
+**1. Create prompt** (in management session):
+```
+/create-prompt Build CLI with list/get/set commands
+```
+Saves to: `{project}/prompts/001-description.md`
+
+**2. Execute with YOLO**:
+```bash
+./yolo-prompt.sh ~/Documents/workspaces/my-app 001
+```
+
+**3. Press Enter** at prompt dialog (current limitation)
+
+**4. YOLO executes** `/run-prompt 001` inside container:
+- Finds prompt file
+- Reads XML-structured content
+- Implements autonomously
+- Archives to `prompts/completed/`
+
+**Benefits:**
+- ✅ Clean separation: planning vs execution
+- ✅ Prompts live in project repo
+- ✅ Reusable slash command logic
+- ✅ Automatic archiving
+- ✅ No duplication
+
+**Requirements:**
+- Install [claude-yolo-plugin](https://github.com/bborbe/claude-yolo-plugin) for `/create-prompt` and `/run-prompt`
+- Copy slash commands to `~/.claude-yolo/commands/`
 
 ### Interactive Mode (No Prompt)
 
@@ -156,10 +228,59 @@ claude-yolo/
 ├── Dockerfile             # Container definition
 ├── entrypoint.sh          # Container init
 ├── init-firewall.sh       # Network restrictions
-├── run-yolo.sh            # Helper script
+├── run-yolo.sh            # Launch container (interactive or one-shot)
+├── yolo-prompt.sh         # Execute prompts via /run-prompt
+├── examples/
+│   └── CLAUDE.md          # Sample workflow configuration
 ├── Makefile               # Build/run helpers
 └── README.md
 ```
+
+**User's YOLO setup:**
+```
+~/.claude-yolo/            # Isolated YOLO config (separate from ~/.claude)
+├── CLAUDE.md              # Workflow instructions (copied from examples/)
+├── commands/              # Slash commands for YOLO
+│   └── run-prompt.md      # From claude-yolo-plugin
+└── memory/                # Optional YOLO-specific memory
+```
+
+**Project workspace:**
+```
+my-app/
+├── prompts/               # Executable prompts (created by /create-prompt)
+│   ├── 001-feature.md
+│   ├── 002-bugfix.md
+│   └── completed/         # Archived after execution
+└── ...                    # Your project files
+```
+
+## Related Projects
+
+**Claude YOLO Plugin** - Slash commands for prompt-based workflow:
+- Repository: https://github.com/bborbe/claude-yolo-plugin
+- Commands: `/create-prompt`, `/run-prompt`
+- Installation: Copy commands to `~/.claude-yolo/commands/`
+
+**Attribution:**
+- Slash commands inspired by [taches-cc-resources](https://github.com/glittercowboy/taches-cc-resources)
+- Dark Factory pattern concept
+- Prompt engineering best practices
+
+## Architecture
+
+**Management Session** (your laptop, safe):
+- Create prompts with `/create-prompt`
+- Review implementation results
+- Commit acceptable changes
+
+**YOLO Container** (Docker, isolated, auto-approve):
+- Reads `~/.claude-yolo/CLAUDE.md` for workflow
+- Executes prompts autonomously
+- Runs tests, commits changes
+- Restricted network access (firewall)
+
+**Key Insight:** Isolation enables autonomy. Auto-approve mode is safe because the container can't access production systems.
 
 ## License
 
