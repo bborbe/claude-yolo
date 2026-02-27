@@ -6,4 +6,9 @@ build:
 run:
 	bash run-yolo.sh
 
-.PHONY: build run
+test: check
+
+check:
+	shellcheck *.sh
+
+.PHONY: build run test check

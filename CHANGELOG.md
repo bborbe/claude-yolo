@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - One-shot mode: pass prompt as argument to `run-yolo.sh` for automated execution
 - `YOLO_PROMPT` environment variable support in entrypoint for prompt passthrough
 - Comprehensive README examples for both interactive and one-shot modes
+- CI workflow with shellcheck validation (`make test`)
+- Claude Code workflow for @claude mentions in PRs/issues
+- `make test` and `make check` targets for shellcheck validation
 
 ### Changed
 - `run-yolo.sh` now accepts optional prompt argument for one-shot execution
