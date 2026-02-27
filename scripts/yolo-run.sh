@@ -11,7 +11,7 @@ PROMPT=""
 # Parse arguments
 if [ $# -eq 1 ]; then
     # Could be path OR prompt
-    if [ -d "$1" ] || [ -f "$1" ] || git -C "$1" rev-parse --show-toplevel >/dev/null 2>&1; then
+    if [ -d "$1" ] || [ -f "$1" ] || (cd "$1" && git rev-parse --show-toplevel) >/dev/null 2>&1; then
         TARGET_DIR="$1"
     else
         PROMPT="$1"
@@ -22,7 +22,7 @@ elif [ $# -eq 2 ]; then
 fi
 
 # Find git root
-if ! GIT_ROOT=$(git -C "$TARGET_DIR" rev-parse --show-toplevel 2>/dev/null); then
+if ! GIT_ROOT=$(cd "$TARGET_DIR" && git rev-parse --show-toplevel 2>/dev/null); then
     echo "ERROR: Not in a git repository: $TARGET_DIR"
     exit 1
 fi
