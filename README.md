@@ -16,46 +16,101 @@ make build
 
 ## Usage
 
-### Usage
+### Interactive Mode (No Prompt)
+
+Start an interactive Claude Code session in auto-approve mode:
 
 ```bash
-# Start container for a project
-cd ~/Documents/workspaces/my-app
-./path/to/run-yolo.sh
+# From current directory
+./run-yolo.sh
 
-# Inside container:
-# - Work at git root (/workspace)
-# - Claude Code available with --dangerously-skip-permissions
-# - Network restricted to allowed domains only
+# From specific project
+./run-yolo.sh ~/Documents/workspaces/my-app
+
+# From subdirectory (auto-detects git root)
+cd src/api/client
+./run-yolo.sh
 ```
 
-Or manually with docker:
+Inside container:
+- Work at git root (`/workspace`)
+- Claude Code with `--dangerously-skip-permissions`
+- Network restricted to allowed domains only
+- Go module cache mounted for speed
+
+### One-Shot Mode (With Prompt)
+
+Execute a prompt and exit automatically:
+
 ```bash
-docker run -it --rm \
-  --cap-add=NET_ADMIN --cap-add=NET_RAW \
-  -v ~/Documents/workspaces/my-app:/workspace \
-  -v ~/.claude.json:/home/node/.claude.json:ro \
-  claude-yolo
+# Inline prompt
+./run-yolo.sh "implement OAuth2 login with JWT tokens"
+
+# Prompt for specific project
+./run-yolo.sh ~/Documents/workspaces/my-app "add user authentication"
+
+# Multi-line prompt
+./run-yolo.sh "$(cat <<'EOF'
+Implement the following feature:
+- Add REST API endpoint /api/users
+- Add validation middleware
+- Write tests with >80% coverage
+EOF
+)"
+
+# From file
+./run-yolo.sh "$(cat task-spec.md)"
 ```
+
+**Use cases:**
+- Automated task execution from specs
+- CI/CD pipeline integration
+- Batch processing multiple prompts
+- Dark Factory pattern (spec → implementation)
 
 ### Helper Script
 
-**`run-yolo.sh [path]`**
-- Auto-detects git root from given path (or CWD)
-- Mounts git root as `/workspace`
-- Starts container at git root
-- Passes through Go module cache for faster builds
+**`run-yolo.sh [path] ["prompt"]`**
+
+**Arguments:**
+- `path` (optional): Project directory or subdirectory (defaults to CWD)
+- `prompt` (optional): Prompt to execute in one-shot mode
+
+**How it works:**
+1. Auto-detects git root from given path
+2. Mounts git root as `/workspace`
+3. Passes Go module cache for faster builds
+4. If prompt given → one-shot mode (execute and exit)
+5. If no prompt → interactive mode (standard session)
+
+**Examples:**
 
 ```bash
-# From project root
-./path/to/run-yolo.sh
+# Interactive mode
+./run-yolo.sh                                    # Current project
+./run-yolo.sh ~/Documents/workspaces/my-app     # Specific project
 
-# From subdirectory
-cd src/api/client
-./path/to/run-yolo.sh
+# One-shot mode
+./run-yolo.sh "add logging middleware"                              # Current project
+./run-yolo.sh ~/Documents/workspaces/my-app "refactor auth module"  # Specific project
 
-# Explicit path
-./path/to/run-yolo.sh ~/Documents/workspaces/my-app
+# From task file
+TASK=$(cat ~/Documents/Obsidian/Personal/24\ Tasks/Build\ Feature.md)
+./run-yolo.sh ~/Documents/workspaces/my-app "$TASK"
+```
+
+### Manual Docker Run
+
+For advanced usage:
+
+```bash
+docker run -it --rm \
+  --cap-add=NET_ADMIN --cap-add=NET_RAW \
+  -e "YOLO_PROMPT=your prompt here" \
+  -v ~/Documents/workspaces/my-app:/workspace \
+  -v ~/.claude-yolo:/home/node/.claude \
+  -v ~/go/pkg:/home/node/go/pkg \
+  claude-yolo
 ```
 
 ## Features
