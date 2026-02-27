@@ -116,52 +116,17 @@ By delegating to a sub-task, the actual implementation work happens in fresh con
 </context_strategy>
 
 <output>
-<single_prompt_output>
-✓ Executed: $PROJECT_ROOT/prompts/005-implement-feature.md
+✓ Executed: $PROJECT_ROOT/prompts/001-implement-feature.md
 ✓ Project: $PROJECT_ROOT
-✓ Model: haiku (or sonnet/opus if specified, or "inherited" if not specified)
-✓ Archived to: $PROJECT_ROOT/prompts/completed/005-implement-feature.md
+✓ Archived to: $PROJECT_ROOT/prompts/completed/001-implement-feature-TIMESTAMP.md
 
 <results>
-[Summary of what the sub-task accomplished]
+[Summary of what was implemented, tests run, verification completed]
 </results>
-</single_prompt_output>
-
-<parallel_output>
-✓ Executed in PARALLEL:
-
-- $PROJECT_ROOT/prompts/005-implement-auth.md
-- $PROJECT_ROOT/prompts/006-implement-api.md
-- $PROJECT_ROOT/prompts/007-implement-ui.md
-
-✓ All archived to $PROJECT_ROOT/prompts/completed/
-
-<results>
-[Consolidated summary of all sub-task results]
-</results>
-</parallel_output>
-
-<sequential_output>
-✓ Executed SEQUENTIALLY:
-
-1. $PROJECT_ROOT/prompts/005-setup-database.md → Success
-2. $PROJECT_ROOT/prompts/006-create-migrations.md → Success
-3. $PROJECT_ROOT/prompts/007-seed-data.md → Success
-
-✓ All archived to $PROJECT_ROOT/prompts/completed/
-
-<results>
-[Consolidated summary showing progression through each step]
-</results>
-</sequential_output>
 </output>
 
-<critical_notes>
-
-- For parallel execution: ALL Task tool calls MUST be in a single message
-- For sequential execution: Wait for each Task to complete before starting next
-- Archive prompts only after successful completion
-- If any prompt fails, stop sequential execution and report error
-- Provide clear, consolidated results for multiple prompt execution
-- Sub-tasks should always work from $PROJECT_ROOT (git root), not subdirectories
-</critical_notes>
+<notes>
+- Archive prompts after successful completion with timestamp
+- Always work from $PROJECT_ROOT (git root), not subdirectories
+- YOLO executes single prompts only (no parallel/sequential support)
+</notes>

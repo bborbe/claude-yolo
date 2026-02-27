@@ -219,21 +219,23 @@ Edit `Makefile` to customize:
 - Workspace mount path
 - Claude config location
 - Model selection
-- Network restrictions (in `init-firewall.sh`)
+- Network restrictions (in `files/init-firewall.sh`)
 
 ## Project Structure
 
 ```
 claude-yolo/
 ├── Dockerfile             # Container definition
-├── entrypoint.sh          # Container init
-├── init-firewall.sh       # Network restrictions
-├── yolo-run.sh            # Launch container (interactive or one-shot)
-├── yolo-prompt.sh         # Execute prompts via /run-prompt
-├── examples/
-│   └── CLAUDE.md          # Sample workflow configuration
 ├── Makefile               # Build/run helpers
-└── README.md
+├── README.md
+├── files/                 # Files copied into container image
+│   ├── entrypoint.sh      # Container init
+│   └── init-firewall.sh   # Network restrictions
+├── scripts/               # Helper scripts (run on host)
+│   ├── yolo-run.sh        # Launch container (interactive or one-shot)
+│   └── yolo-prompt.sh     # Execute prompts via /run-prompt
+└── examples/
+    └── CLAUDE.md          # Sample workflow configuration
 ```
 
 **User's YOLO setup:**
