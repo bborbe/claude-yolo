@@ -41,7 +41,7 @@ echo "Starting claude-yolo container..."
 docker run -it --rm \
     --cap-add=NET_ADMIN \
     --cap-add=NET_RAW \
-    -e "YOLO_PROMPT=$PROMPT" \
+    -e YOLO_PROMPT="$PROMPT" \
     -v "$GIT_ROOT:/workspace" \
     -v "$HOME/.claude-yolo:/home/node/.claude" \
     -v "$HOME/go/pkg:/home/node/go/pkg" \
