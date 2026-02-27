@@ -16,7 +16,7 @@ PROJECT_PATH="$1"
 PROMPT_ID="$2"
 
 # Find git root
-if ! GIT_ROOT=$(git -C "$PROJECT_PATH" rev-parse --show-toplevel 2>/dev/null); then
+if ! GIT_ROOT=$(cd "$PROJECT_PATH" && git rev-parse --show-toplevel 2>/dev/null); then
     echo "ERROR: Not in a git repository: $PROJECT_PATH"
     exit 1
 fi

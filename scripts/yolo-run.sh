@@ -72,7 +72,8 @@ echo "To view logs:            docker logs -f $CONTAINER_ID"
 echo ""
 
 # Kill container on script exit/interrupt and remove lock file
-trap 'docker kill '"$CONTAINER_ID"' 2>/dev/null; rm -f '"'$LOCK_FILE'" EXIT INT TERM
+# shellcheck disable=SC2064  # Intentional: expand vars now, not at signal time
+trap "docker kill $CONTAINER_ID 2>/dev/null || true; rm -f $LOCK_FILE" EXIT INT TERM
 
 # Interactive: attach (can type), One-shot: follow logs
 if [ -z "$PROMPT" ]; then
