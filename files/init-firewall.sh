@@ -77,7 +77,9 @@ for domain in \
     "sum.golang.org" \
     "storage.googleapis.com" \
     "vuln.go.dev" \
-    "api.osv.dev"; do
+    "api.osv.dev" \
+    "ghcr.io" \
+    "pkg-containers.githubusercontent.com"; do
     echo "Resolving $domain..."
     ips=$(dig +noall +answer A "$domain" | awk '$4 == "A" {print $5}')
     if [ -z "$ips" ]; then
