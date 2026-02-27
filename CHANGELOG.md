@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.0.6
+
+### Fixed
+- Bare key access in stream-formatter.py replaced with `.get()` to prevent crash on malformed JSON
+- Replace all `git -C` with `cd && git` in yolo-run.sh
+- README Configuration section now matches actual Makefile variables
+- Added missing yolo-prompt.sh usage documentation to README
+- Added stream-formatter.py to project structure in README
+
+### Changed
+- Wrap stream-formatter.py in `main()` with `__name__` guard for testability
+
 ## v0.0.5
 
 ### Fixed

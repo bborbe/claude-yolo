@@ -171,6 +171,27 @@ TASK=$(cat ~/Documents/Obsidian/Personal/24\ Tasks/Build\ Feature.md)
 ./scripts/yolo-run.sh ~/Documents/workspaces/my-app "$TASK"
 ```
 
+### Prompt Execution Script
+
+**`yolo-prompt.sh <project-path> <prompt-number-or-name>`**
+
+Executes a specific prompt from the project's `prompts/` directory via `/run-prompt`.
+
+**Arguments:**
+- `project-path` (required): Project directory
+- `prompt-number-or-name` (required): Prompt number (e.g., `001`) or name (e.g., `implement-cli`)
+
+**Examples:**
+```bash
+# By number
+./scripts/yolo-prompt.sh ~/Documents/workspaces/my-app 001
+
+# By name
+./scripts/yolo-prompt.sh ~/Documents/workspaces/my-app implement-cli
+```
+
+**Requires:** [claude-yolo-plugin](https://github.com/bborbe/claude-yolo-plugin) installed in `~/.claude-yolo/commands/`
+
 ### Manual Docker Run
 
 For advanced usage:
@@ -215,11 +236,14 @@ Container has:
 
 ## Configuration
 
-Edit `Makefile` to customize:
-- Workspace mount path
-- Claude config location
-- Model selection
-- Network restrictions (in `files/init-firewall.sh`)
+**Makefile variables:**
+- `REGISTRY` - Docker registry (default: `docker.io`)
+- `IMAGE` - Image name (default: `bborbe/claude-yolo`)
+- `VERSION` - Auto-detected from git tags (override: `make build VERSION=custom`)
+
+**Network restrictions:** Edit `files/init-firewall.sh` to add/remove allowed domains.
+
+**Claude model:** Edit `files/entrypoint.sh` to change `--model` flag.
 
 ## Project Structure
 
@@ -230,7 +254,8 @@ claude-yolo/
 ├── README.md
 ├── files/                 # Files copied into container image
 │   ├── entrypoint.sh      # Container init
-│   └── init-firewall.sh   # Network restrictions
+│   ├── init-firewall.sh   # Network restrictions
+│   └── stream-formatter.py # Parse stream-json output for one-shot mode
 ├── scripts/               # Helper scripts (run on host)
 │   ├── yolo-run.sh        # Launch container (interactive or one-shot)
 │   └── yolo-prompt.sh     # Execute prompts via /run-prompt
