@@ -1,6 +1,6 @@
 REGISTRY ?= docker.io
 IMAGE ?= bborbe/claude-yolo
-VERSION ?= latest
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo latest)
 
 .PHONY: check
 precommit: check
@@ -21,12 +21,14 @@ build:
 	DOCKER_BUILDKIT=1 docker build \
 		--build-arg BUILDKIT_INLINE_CACHE=1 \
 		-t $(REGISTRY)/$(IMAGE):$(VERSION) \
+		-t $(REGISTRY)/$(IMAGE):latest \
 		-f Dockerfile \
 		.
 
 .PHONY: upload
 upload:
 	docker push $(REGISTRY)/$(IMAGE):$(VERSION)
+	docker push $(REGISTRY)/$(IMAGE):latest
 
 .PHONY: clean
 clean:
