@@ -37,8 +37,15 @@ fi
 
 echo "Starting claude-yolo container..."
 
+# Detect TTY for docker flags
+if [ -t 0 ]; then
+    DOCKER_FLAGS="-it"
+else
+    DOCKER_FLAGS="-i"
+fi
+
 # Run container with git root mounted (auto-generated name for parallel instances)
-docker run -it --rm \
+docker run $DOCKER_FLAGS --rm \
     --cap-add=NET_ADMIN \
     --cap-add=NET_RAW \
     -e YOLO_PROMPT="$PROMPT" \
