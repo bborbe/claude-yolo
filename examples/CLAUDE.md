@@ -27,16 +27,14 @@ You are running in an isolated Docker container with `--dangerously-skip-permiss
 3. **Implement** - Follow all success criteria from the prompt
 4. **Verify** - Run tests (`make test`)
 5. **Validate** - Run full checks (`make precommit`)
-6. **Commit prompts** - Add `prompts/completed/` to git (documents what was implemented)
-7. **Commit code** - Clean commit message, no attribution
+
+**Note:** YOLO does NOT commit or push. Management session handles git operations (has GPG key and credentials).
 
 ## Prompt Management
 
 After executing a prompt via `/run-prompt`:
 - Completed prompts are archived to `prompts/completed/`
-- **Always commit completed prompts** - they document implementation specs
-- Include in the same commit as the implementation, or separate commit
-- Example: `git add prompts/completed/ && git commit -m "docs: archive completed prompt"`
+- Management session will commit them (not YOLO)
 
 ## Completion Protocol
 
