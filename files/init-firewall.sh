@@ -46,6 +46,10 @@ iptables -A INPUT -p udp --sport 53 -j ACCEPT
 # Allow root (tinyproxy) full outbound
 iptables -A OUTPUT -m owner --uid-owner 0 -j ACCEPT
 
+# Allow SSH to GitHub (git push/pull over SSH)
+iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
+
 # Allow host network (Docker volume mounts, host communication)
 HOST_IP=$(ip route | grep default | cut -d" " -f3)
 if [ -n "$HOST_IP" ]; then
