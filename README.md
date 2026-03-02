@@ -210,10 +210,16 @@ docker run -it --rm \
 
 ### Network Firewall
 
-Container runs with restricted network access via iptables:
-- ✅ Allowed: GitHub, npm, Anthropic API, Go proxies
+Container runs with restricted network access via **tinyproxy** (domain-based filtering) + **iptables** (enforcement):
+
+- tinyproxy runs on `localhost:8888` with a domain allowlist
+- `HTTP_PROXY`/`HTTPS_PROXY` set automatically in entrypoint
+- iptables owner-match: only `root` (tinyproxy) gets direct outbound, `node` (claude) must go through proxy
+- ✅ Allowed: GitHub, npm, Anthropic API, Go proxies, OSV vulnerability DB
 - ❌ Blocked: Everything else (example.com fails)
 - Requires `--cap-add=NET_ADMIN --cap-add=NET_RAW`
+
+**Adding domains:** Edit `files/tinyproxy-allowlist` (regex patterns, one per line)
 
 ### Git-Root Mounting
 
@@ -241,7 +247,7 @@ Container has:
 - `IMAGE` - Image name (default: `bborbe/claude-yolo`)
 - `VERSION` - Auto-detected from git tags (override: `make build VERSION=custom`)
 
-**Network restrictions:** Edit `files/init-firewall.sh` to add/remove allowed domains.
+**Network allowlist:** Edit `files/tinyproxy-allowlist` to add/remove allowed domains (regex patterns).
 
 **Claude model:** Edit `files/entrypoint.sh` to change `--model` flag.
 
@@ -253,8 +259,10 @@ claude-yolo/
 ├── Makefile               # Build/run helpers
 ├── README.md
 ├── files/                 # Files copied into container image
-│   ├── entrypoint.sh      # Container init
-│   ├── init-firewall.sh   # Network restrictions
+│   ├── entrypoint.sh      # Container init (sets proxy env vars)
+│   ├── init-firewall.sh   # Starts tinyproxy + iptables rules
+│   ├── tinyproxy.conf     # Proxy configuration
+│   ├── tinyproxy-allowlist # Domain allowlist (regex patterns)
 │   └── stream-formatter.py # Parse stream-json output for one-shot mode
 ├── scripts/               # Helper scripts (run on host)
 │   ├── yolo-run.sh        # Launch container (interactive or one-shot)
