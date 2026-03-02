@@ -20,10 +20,8 @@ RUN --mount=type=cache,target=/var/cache/apt \
     gnupg2 \
     gh \
     iptables \
-    ipset \
     iproute2 \
-    dnsutils \
-    aggregate \
+    tinyproxy \
     jq \
     ripgrep \
     screen \
@@ -73,7 +71,11 @@ ENV HOME=/home/node
 RUN mkdir -p /workspace /home/node/.claude /home/node/go && \
     chown -R node:node /workspace /home/node/.claude /home/node/go
 
-# Scripts (require --cap-add=NET_ADMIN --cap-add=NET_RAW --cap-add=SYS_ADMIN at runtime)
+# Proxy allowlist (domain-based filtering via tinyproxy)
+COPY files/tinyproxy.conf /etc/tinyproxy/tinyproxy.conf
+COPY files/tinyproxy-allowlist /etc/tinyproxy/allowlist
+
+# Scripts (require --cap-add=NET_ADMIN --cap-add=NET_RAW at runtime)
 COPY files/init-firewall.sh /usr/local/bin/init-firewall.sh
 COPY files/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY files/stream-formatter.py /usr/local/bin/stream-formatter.py

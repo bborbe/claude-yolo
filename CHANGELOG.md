@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.0.8
+
+### Changed
+
+- Replaced IP-based firewall (ipset/dig/aggregate) with tinyproxy domain-based filtering
+- Simplified init-firewall.sh: no more DNS resolution at startup
+- Removed `ipset`, `dnsutils`, `aggregate` from container image
+
+### Fixed
+
+- CDN-backed domains (api.osv.dev, storage.googleapis.com) no longer break due to IP rotation after container init
+
+### Added
+
+- Domain allowlist at `/etc/tinyproxy/allowlist` for easy domain management
+- HTTP_PROXY/HTTPS_PROXY env vars set automatically in entrypoint
+
 ## v0.0.7
 
 ### Added
