@@ -1,12 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 
-# Firewall
+# Firewall + proxy
 if [ "${DEBUG:-0}" = "1" ]; then
     sudo /usr/local/bin/init-firewall.sh
 else
     sudo /usr/local/bin/init-firewall.sh > /dev/null 2>&1
 fi
+
+# Configure proxy for all HTTP(S) traffic
+export HTTP_PROXY=http://127.0.0.1:8888
+export HTTPS_PROXY=http://127.0.0.1:8888
+export http_proxy=http://127.0.0.1:8888
+export https_proxy=http://127.0.0.1:8888
+git config --global http.proxy http://127.0.0.1:8888
+git config --global https.proxy http://127.0.0.1:8888
 
 # Read prompt from file if specified
 if [ -n "${YOLO_PROMPT_FILE:-}" ] && [ -f "${YOLO_PROMPT_FILE}" ]; then
