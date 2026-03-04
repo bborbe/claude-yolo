@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.1.0
+
+- Add configurable model via `YOLO_MODEL` env var (default: `sonnet`, auto-resolves to latest)
+- Update default model from `claude-sonnet-4-5` to `sonnet` (no more version pinning)
+
 ## v0.0.9
 
 - Reformat CHANGELOG.md to follow Changelog Writing Guide (flat list, proper SemVer preamble, remove `### Added/Fixed/Changed` subsections)
