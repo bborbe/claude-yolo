@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.1.1
+
+- Add dark-factory config and prompt directories
+- Fix completed prompt format to use YAML frontmatter
+
 ## v0.1.0
 
 - Add configurable model via `YOLO_MODEL` env var (default: `sonnet`, auto-resolves to latest)
