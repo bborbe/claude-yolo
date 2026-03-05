@@ -85,6 +85,15 @@ RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/entrypoint.sh && \
 
 USER node
 
+# Install uv (Python package manager)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Add uv/tools to PATH
+ENV PATH="/home/node/.local/bin:${PATH}"
+
+# Install updater tool via uv
+RUN /home/node/.local/bin/uv tool install git+https://github.com/bborbe/updater
+
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
   go install github.com/onsi/ginkgo/v2/ginkgo@latest && \
   go install github.com/maxbrunsfeld/counterfeiter/v6@latest && \
