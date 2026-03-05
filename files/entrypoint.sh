@@ -24,11 +24,18 @@ fi
 # Model selection (default: sonnet, auto-resolves to latest version)
 MODEL="${YOLO_MODEL:-sonnet}"
 
+# Output format: "print" for raw text, default uses stream-json + formatter
+OUTPUT="${YOLO_OUTPUT:-stream}"
+
 # Check for prompt
 if [ -n "${YOLO_PROMPT:-}" ]; then
     echo "Starting headless session..."
-    exec claude -p "${YOLO_PROMPT}" --dangerously-skip-permissions --model "${MODEL}" --output-format stream-json --verbose \
-        | python3 /usr/local/bin/stream-formatter.py
+    if [ "$OUTPUT" = "print" ]; then
+        exec claude --print -p "${YOLO_PROMPT}" --dangerously-skip-permissions --model "${MODEL}" --verbose
+    else
+        exec claude -p "${YOLO_PROMPT}" --dangerously-skip-permissions --model "${MODEL}" --output-format stream-json --verbose \
+            | python3 /usr/local/bin/stream-formatter.py
+    fi
 else
     # Interactive mode
     echo "Starting interactive session..."
