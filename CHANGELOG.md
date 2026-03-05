@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.2.1
+
+- Allow `pypi.org` and `files.pythonhosted.org` in tinyproxy firewall for Python projects
+
 ## v0.2.0
 
 - Add `YOLO_OUTPUT` env var: set to `print` for raw text output via `claude --print` (default: stream-json + formatter)
