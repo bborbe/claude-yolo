@@ -1,3 +1,7 @@
+---
+status: queued
+---
+
 <objective>
 Install uv (Python package manager) and the bborbe/updater tool in the Docker image so claude-yolo containers have `updater` available at runtime.
 </objective>
