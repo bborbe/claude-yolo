@@ -5,7 +5,9 @@
 ^ghcr\.io$
 ^github\.com$
 ^marketplace\.visualstudio\.com$
+^dl-cdn\.alpinelinux\.org$
 ^files\.pythonhosted\.org$
+^go\.dev$
 ^pkg-containers\.githubusercontent\.com$
 ^platform.claude.com$
 ^proxy\.golang\.org$
@@ -19,3 +21,4 @@
 ^update\.code\.visualstudio\.com$
 ^vscode\.blob\.core\.windows\.net$
 ^vuln\.go\.dev$
+^www\.python\.org$
