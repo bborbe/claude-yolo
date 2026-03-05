@@ -5,9 +5,11 @@
 ^ghcr\.io$
 ^github\.com$
 ^marketplace\.visualstudio\.com$
+^files\.pythonhosted\.org$
 ^pkg-containers\.githubusercontent\.com$
 ^platform.claude.com$
 ^proxy\.golang\.org$
+^pypi\.org$
 ^registry\.npmjs\.org$
 ^sentry\.io$
 ^statsig\.anthropic\.com$
