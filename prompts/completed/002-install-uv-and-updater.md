@@ -1,5 +1,12 @@
 ---
-status: queued
+status: completed
+summary: Added uv and updater tool installations to Dockerfile
+container: claude-yolo-002-install-uv-and-updater
+dark-factory-version: dev
+created: "2026-03-05T21:06:31Z"
+queued: "2026-03-05T21:06:31Z"
+started: "2026-03-05T21:06:31Z"
+completed: "2026-03-05T21:07:20Z"
 ---
 
 <objective>
