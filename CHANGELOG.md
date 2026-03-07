@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.2.3
+
+- Move specs directory structure
+
 ## v0.2.2
 
 - Allow `go.dev`, `dl-cdn.alpinelinux.org`, and `www.python.org` in tinyproxy firewall
