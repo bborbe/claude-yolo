@@ -1,3 +1,7 @@
+---
+status: ""
+created: "2026-03-07T12:06:18Z"
+---
 <objective>
 Pin the bborbe/updater installation in the Dockerfile to a fixed version tag (v0.15.1) instead of the default branch.
 </objective>

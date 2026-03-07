@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.2.5
+
+- Update Go version from 1.26.0 to 1.26.1 in Dockerfile
+- Remove CLAUDE.md from git tracking
+- Rename updater pin prompt (remove number prefix)
+
 ## v0.2.4
 
 - Add prompt to pin updater to fixed version (v0.15.1) in Dockerfile

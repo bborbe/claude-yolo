@@ -50,7 +50,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
     apt-get install -y --no-install-recommends trivy
 
 # Go
-ARG GO_VERSION=1.26.0
+ARG GO_VERSION=1.26.1
 ARG TARGETARCH
 RUN curl -fsSL https://go.dev/dl/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz \
     | tar -C /usr/local -xz
