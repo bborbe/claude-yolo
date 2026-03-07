@@ -92,7 +92,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/home/node/.local/bin:${PATH}"
 
 # Install updater tool via uv
-RUN /home/node/.local/bin/uv tool install git+https://github.com/bborbe/updater
+RUN /home/node/.local/bin/uv tool install git+https://github.com/bborbe/updater@v0.15.1
 
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
   go install github.com/onsi/ginkgo/v2/ginkgo@latest && \
