@@ -15,6 +15,7 @@ export http_proxy=http://127.0.0.1:8888
 export https_proxy=http://127.0.0.1:8888
 git config --global http.proxy http://127.0.0.1:8888
 git config --global https.proxy http://127.0.0.1:8888
+git config --global --add safe.directory /workspace
 
 # Read prompt from file if specified
 if [ -n "${YOLO_PROMPT_FILE:-}" ] && [ -f "${YOLO_PROMPT_FILE}" ]; then
