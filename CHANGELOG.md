@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.2.8
+
+- Allow `bitbucket.seibert.tools` over HTTPS (proxy allowlist) and SSH/git port 7999 (tinyproxy ConnectPort + iptables)
+
 ## v0.2.7
 
 - Add `safe.directory` config to prevent VCS status error in entrypoint

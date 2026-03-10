@@ -50,6 +50,9 @@ iptables -A OUTPUT -m owner --uid-owner 0 -j ACCEPT
 iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT
 iptables -A INPUT -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
 
+# Allow SSH to Bitbucket Server (non-standard port)
+iptables -A OUTPUT -p tcp --dport 7999 -j ACCEPT
+
 # Allow host network (Docker volume mounts, host communication)
 HOST_IP=$(ip route | grep default | cut -d" " -f3)
 if [ -n "$HOST_IP" ]; then
