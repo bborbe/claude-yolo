@@ -1,7 +1,12 @@
 ---
-status: approved
+status: completed
+summary: Added bitbucket.seibert.tools to tinyproxy allowlist, ConnectPort 7999 to tinyproxy.conf, and iptables OUTPUT rule for port 7999 in init-firewall.sh
+container: claude-yolo-004-bitbucket-server-network-access
+dark-factory-version: v0.33.1
 created: "2026-03-10T11:55:45Z"
 queued: "2026-03-10T11:55:45Z"
+started: "2026-03-10T11:55:58Z"
+completed: "2026-03-10T11:56:31Z"
 ---
 
 <summary>
