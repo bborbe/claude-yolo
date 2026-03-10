@@ -8,6 +8,11 @@ else
     sudo /usr/local/bin/init-firewall.sh > /dev/null 2>&1
 fi
 
+# Merge custom gitconfig if mounted (must be before git config --global)
+if [ -f /home/node/.gitconfig-extra ]; then
+    cp /home/node/.gitconfig-extra /home/node/.gitconfig
+fi
+
 # Configure proxy for all HTTP(S) traffic
 export HTTP_PROXY=http://127.0.0.1:8888
 export HTTPS_PROXY=http://127.0.0.1:8888
