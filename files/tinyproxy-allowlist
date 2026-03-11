@@ -9,7 +9,8 @@
 ^files\.pythonhosted\.org$
 ^go\.dev$
 ^pkg-containers\.githubusercontent\.com$
-^platform.claude.com$
+^claude\.ai$
+^platform\.claude\.com$
 ^proxy\.golang\.org$
 ^pypi\.org$
 ^registry\.npmjs\.org$
