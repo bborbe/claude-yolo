@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.3.1
+
+- Update updater tool from v0.15.1 to v0.17.23
+- Consolidate all ARG declarations at top of Dockerfile
+
 ## v0.3.0
 
 - feat: add `[HH:MM:SS]` timestamp prefix to all stream-formatter output lines

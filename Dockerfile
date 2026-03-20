@@ -1,9 +1,12 @@
 FROM node:22
 
 ARG TZ
-ENV TZ="${TZ:-Europe/Berlin}"
-
 ARG CLAUDE_CODE_VERSION=latest
+ARG GO_VERSION=1.26.1
+ARG TARGETARCH
+ARG UPDATER_VERSION=0.17.23
+
+ENV TZ="${TZ:-Europe/Berlin}"
 
 # Install dev tools + firewall deps
 RUN --mount=type=cache,target=/var/cache/apt \
@@ -50,8 +53,6 @@ RUN --mount=type=cache,target=/var/cache/apt \
     apt-get install -y --no-install-recommends trivy
 
 # Go
-ARG GO_VERSION=1.26.1
-ARG TARGETARCH
 RUN curl -fsSL https://go.dev/dl/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz \
     | tar -C /usr/local -xz
 ENV PATH="/usr/local/go/bin:${PATH}"
@@ -92,7 +93,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/home/node/.local/bin:${PATH}"
 
 # Install updater tool via uv
-RUN /home/node/.local/bin/uv tool install git+https://github.com/bborbe/updater@v0.15.1
+RUN /home/node/.local/bin/uv tool install git+https://github.com/bborbe/updater@v${UPDATER_VERSION}
 
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
   go install github.com/onsi/ginkgo/v2/ginkgo@latest && \
