@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.3.2
+
+- Add multi-arch build support (linux/amd64 + linux/arm64) via docker buildx
+
 ## v0.3.1
 
 - Update updater tool from v0.15.1 to v0.17.23

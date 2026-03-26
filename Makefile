@@ -25,6 +25,16 @@ build:
 		-f Dockerfile \
 		.
 
+.PHONY: build-multiarch
+build-multiarch:
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		-t $(REGISTRY)/$(IMAGE):$(VERSION) \
+		-t $(REGISTRY)/$(IMAGE):latest \
+		--push \
+		-f Dockerfile \
+		.
+
 .PHONY: upload
 upload:
 	docker push $(REGISTRY)/$(IMAGE):$(VERSION)
