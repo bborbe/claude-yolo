@@ -80,10 +80,9 @@ COPY files/tinyproxy-allowlist /etc/tinyproxy/allowlist
 COPY files/init-firewall.sh /usr/local/bin/init-firewall.sh
 COPY files/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY files/stream-formatter.py /usr/local/bin/stream-formatter.py
-RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/entrypoint.sh && \
-    echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
-    chmod 0440 /etc/sudoers.d/node-firewall
+RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/entrypoint.sh
 
+# Build tools as node user
 USER node
 
 # Install uv (Python package manager)
@@ -98,10 +97,13 @@ RUN /home/node/.local/bin/uv tool install git+https://github.com/bborbe/updater@
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
   go install github.com/onsi/ginkgo/v2/ginkgo@latest && \
   go install github.com/maxbrunsfeld/counterfeiter/v6@latest && \
-  go install golang.org/x/tools/cmd/goimports@latest
+  go install golang.org/x/tools/cmd/goimports@latest && \
+  rm -rf /home/node/.cache/go-build
 
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
 WORKDIR /workspace
 
+# Entrypoint runs as root: sets up firewall, remaps node UID via /etc/passwd, then drops to node via gosu
+USER root
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

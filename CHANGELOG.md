@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.4.0
+
+- Add runtime UID remapping via `/etc/passwd` edit to match host workspace owner
+- Replace `sudo` with `setpriv` for dropping privileges (fixes TTY passthrough for interactive mode)
+- Run entrypoint as root, drop to remapped `node` user via `setpriv --reuid/--regid`
+- Remove Go build cache from image to reduce size and avoid slow chown at startup
+- Replace `gosu` dependency with `setpriv` (built-in `util-linux`)
+
 ## v0.3.2
 
 - Add multi-arch build support (linux/amd64 + linux/arm64) via docker buildx
