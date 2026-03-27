@@ -37,9 +37,12 @@ run_as_node git config --global http.proxy http://127.0.0.1:8888
 run_as_node git config --global https.proxy http://127.0.0.1:8888
 run_as_node git config --global --add safe.directory /workspace
 
-# Read prompt from file if specified
+# Resolve prompt to a temp file (avoids shell quoting issues with special characters)
 if [ -n "${YOLO_PROMPT_FILE:-}" ] && [ -f "${YOLO_PROMPT_FILE}" ]; then
-    YOLO_PROMPT=$(cat "${YOLO_PROMPT_FILE}")
+    PROMPT_FILE="$YOLO_PROMPT_FILE"
+elif [ -n "${YOLO_PROMPT:-}" ]; then
+    PROMPT_FILE=$(mktemp /tmp/yolo-prompt.XXXXXX)
+    printf '%s' "$YOLO_PROMPT" > "$PROMPT_FILE"
 fi
 
 # Model selection (default: sonnet, auto-resolves to latest version)
@@ -49,12 +52,21 @@ MODEL="${YOLO_MODEL:-sonnet}"
 OUTPUT="${YOLO_OUTPUT:-stream}"
 
 # Check for prompt
-if [ -n "${YOLO_PROMPT:-}" ]; then
+if [ -n "${PROMPT_FILE:-}" ]; then
     echo "Starting headless session..."
+    # No trap — exec replaces the shell, so EXIT trap would delete the file before claude reads it
     if [ "$OUTPUT" = "print" ]; then
-        exec setpriv --reuid=node --regid=node --init-groups -- claude --print -p "${YOLO_PROMPT}" --dangerously-skip-permissions --model "${MODEL}" --verbose
+        exec setpriv --reuid=node --regid=node --init-groups -- \
+            claude --print -p --dangerously-skip-permissions \
+            --model "$MODEL" --verbose < "$PROMPT_FILE"
     else
-        exec setpriv --reuid=node --regid=node --init-groups -- sh -c "claude -p '${YOLO_PROMPT}' --dangerously-skip-permissions --model '${MODEL}' --output-format stream-json --verbose | python3 /usr/local/bin/stream-formatter.py"
+        # exec + pipe requires sh -c; pass MODEL and PROMPT_FILE as positional args to avoid quoting issues
+        # shellcheck disable=SC2016
+        exec setpriv --reuid=node --regid=node --init-groups -- \
+            sh -c 'claude -p --dangerously-skip-permissions --model "$1" \
+                   --output-format stream-json --verbose < "$2" \
+                   | python3 /usr/local/bin/stream-formatter.py' \
+            _ "$MODEL" "$PROMPT_FILE"
     fi
 else
     # Interactive mode

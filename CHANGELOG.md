@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.4.2
+
+- Pass prompt via stdin file redirect instead of shell variable interpolation to avoid quoting issues with special characters
+
 ## v0.4.1
 
 - Skip UID remapping when workspace owner is root (fixes Docker Desktop for Mac)
