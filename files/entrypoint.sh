@@ -4,7 +4,7 @@ set -euo pipefail
 # Remap node user to match workspace owner (instant via /etc/passwd edit)
 TARGET_UID=$(stat -c '%u' /workspace)
 TARGET_GID=$(stat -c '%g' /workspace)
-if [ "$(id -u node)" != "$TARGET_UID" ]; then
+if [ "$TARGET_UID" != "0" ] && [ "$(id -u node)" != "$TARGET_UID" ]; then
     sed -i "s/^node:x:[0-9]*:[0-9]*/node:x:${TARGET_UID}:${TARGET_GID}/" /etc/passwd
     sed -i "s/^node:x:[0-9]*/node:x:${TARGET_GID}/" /etc/group
     # Fix ownership of home dir and key writable dirs (non-recursive for speed)

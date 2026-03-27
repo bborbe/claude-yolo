@@ -28,6 +28,7 @@ build:
 .PHONY: build-multiarch
 build-multiarch:
 	docker buildx build \
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
 		--platform linux/amd64,linux/arm64 \
 		-t $(REGISTRY)/$(IMAGE):$(VERSION) \
 		-t $(REGISTRY)/$(IMAGE):latest \

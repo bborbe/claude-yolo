@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.4.1
+
+- Skip UID remapping when workspace owner is root (fixes Docker Desktop for Mac)
+- Add buildkit inline cache to multi-arch build
+
 ## v0.4.0
 
 - Add runtime UID remapping via `/etc/passwd` edit to match host workspace owner
