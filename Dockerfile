@@ -69,8 +69,8 @@ ENV SHELL=/bin/zsh
 ENV CLAUDE_CONFIG_DIR=/home/node/.claude
 ENV HOME=/home/node
 
-RUN mkdir -p /workspace /home/node/.claude /home/node/go && \
-    chown -R node:node /workspace /home/node/.claude /home/node/go
+RUN mkdir -p /workspace /home/node/.claude /home/node/.cache /home/node/go && \
+    chown -R node:node /workspace /home/node/.claude /home/node/.cache /home/node/go
 
 # Proxy allowlist (domain-based filtering via tinyproxy)
 COPY files/tinyproxy.conf /etc/tinyproxy/tinyproxy.conf
