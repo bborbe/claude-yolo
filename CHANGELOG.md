@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.5.0
+
+- feat: Make Claude config directory configurable via CLAUDE_YOLO_DIR env var (defaults to ~/.claude-yolo)
+
 ## v0.4.3
 
 - Fix multi-arch build by creating `/home/node/.cache` directory before switching to node user

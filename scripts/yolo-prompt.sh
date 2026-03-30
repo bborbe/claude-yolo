@@ -4,6 +4,8 @@ set -euo pipefail
 # Usage: yolo-prompt.sh <project-path> <prompt-number-or-name>
 # Example: yolo-prompt.sh ~/Documents/workspaces/vault-cli 001
 # Example: yolo-prompt.sh ~/Documents/workspaces/vault-cli implement-cli
+# Environment:
+#   CLAUDE_YOLO_DIR  Path to Claude config directory (default: ~/.claude-yolo)
 
 if [ $# -ne 2 ]; then
     echo "Usage: $0 <project-path> <prompt-number-or-name>"

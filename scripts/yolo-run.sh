@@ -4,6 +4,10 @@ set -euo pipefail
 # Usage: yolo-run.sh [path] ["prompt"]
 # If no path given, use current directory
 # If prompt given, run one-shot mode (execute prompt and exit)
+# Environment:
+#   CLAUDE_YOLO_DIR  Path to Claude config directory (default: ~/.claude-yolo)
+
+CLAUDE_YOLO_DIR="${CLAUDE_YOLO_DIR:-$HOME/.claude-yolo}"
 
 TARGET_DIR="."
 PROMPT=""
@@ -57,7 +61,7 @@ CONTAINER_ID=$(docker run -dit --rm \
     --cap-add=NET_RAW \
     -e YOLO_PROMPT="$PROMPT" \
     -v "$GIT_ROOT:/workspace" \
-    -v "$HOME/.claude-yolo:/home/node/.claude" \
+    -v "$CLAUDE_YOLO_DIR:/home/node/.claude" \
     -v "$HOME/go/pkg:/home/node/go/pkg" \
     docker.io/bborbe/claude-yolo:latest)
 
