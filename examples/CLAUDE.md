@@ -16,8 +16,8 @@ You are running in an isolated Docker container with `--dangerously-skip-permiss
 
 **Code Quality:**
 - Check project CLAUDE.md for specific patterns
-- For Go: Read `~/Documents/workspaces/coding-guidelines/go-*.md`
-- For Python: Read `~/Documents/workspaces/coding-guidelines/python-*.md`
+- For Go: Read `~/Documents/workspaces/coding/docs/go-*.md`
+- For Python: Read `~/Documents/workspaces/coding/docs/python-*.md`
 - Follow established patterns in the codebase
 
 ## Workflow
