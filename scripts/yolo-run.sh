@@ -62,7 +62,6 @@ CONTAINER_ID=$(docker run -dit --rm \
     -e YOLO_PROMPT="$PROMPT" \
     -v "$GIT_ROOT:/workspace" \
     -v "$CLAUDE_YOLO_DIR:/home/node/.claude" \
-    -v "$HOME/go/pkg:/home/node/go/pkg" \
     docker.io/bborbe/claude-yolo:latest)
 
 # Write container ID to lock file
