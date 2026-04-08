@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.5.3
+
+- Update Go to 1.26.2
+
 ## v0.5.2
 
 - fix: Remove hardcoded Go module cache volume mount from yolo-run.sh
