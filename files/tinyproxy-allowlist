@@ -1,6 +1,7 @@
 ^.*\.github\.com$
 ^.*\.githubusercontent\.com$
 ^api\.anthropic\.com$
+^console\.anthropic\.com$
 ^api\.osv\.dev$
 ^ghcr\.io$
 ^github\.com$
