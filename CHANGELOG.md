@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.6.0
+
+- feat: Add `YOLO_OUTPUT=json` mode that emits raw stream-json to stdout without the formatter (useful for external processing)
+- feat: Richer stream-formatter output — session init stats, tool error flags, bash failure tails, Edit diff previews, Agent prompt/reply, TodoWrite progress, and final duration/cost/token stats
+
 ## v0.5.4
 
 - Allow `console.anthropic.com` in tinyproxy allowlist (fixes `/login` OAuth timeout)

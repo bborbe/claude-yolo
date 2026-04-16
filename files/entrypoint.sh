@@ -48,7 +48,10 @@ fi
 # Model selection (default: sonnet, auto-resolves to latest version)
 MODEL="${YOLO_MODEL:-sonnet}"
 
-# Output format: "print" for raw text, default uses stream-json + formatter
+# Output format:
+#   "print"  = raw text via `claude --print`
+#   "json"   = raw stream-json JSONL (no formatter)
+#   default  = stream-json piped through the formatter
 OUTPUT="${YOLO_OUTPUT:-stream}"
 
 # Check for prompt
@@ -59,6 +62,10 @@ if [ -n "${PROMPT_FILE:-}" ]; then
         exec setpriv --reuid=node --regid=node --init-groups -- \
             claude --print -p --dangerously-skip-permissions \
             --model "$MODEL" --verbose < "$PROMPT_FILE"
+    elif [ "$OUTPUT" = "json" ]; then
+        exec setpriv --reuid=node --regid=node --init-groups -- \
+            claude -p --dangerously-skip-permissions \
+            --model "$MODEL" --output-format stream-json --verbose < "$PROMPT_FILE"
     else
         # exec + pipe requires sh -c; pass MODEL and PROMPT_FILE as positional args to avoid quoting issues
         # shellcheck disable=SC2016
