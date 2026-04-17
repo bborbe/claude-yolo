@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.6.1
+
+- bump updater to v0.22.0 (adds --no-git mode for hideGit containers)
+
 ## v0.6.0
 
 - feat: Add `YOLO_OUTPUT=json` mode that emits raw stream-json to stdout without the formatter (useful for external processing)
