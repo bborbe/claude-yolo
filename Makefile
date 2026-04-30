@@ -45,3 +45,10 @@ upload:
 clean:
 	docker rmi $(REGISTRY)/$(IMAGE):$(VERSION) || true
 	docker rmi openclaw:localclaw || true
+
+.PHONY: apply
+apply:
+
+.PHONY: buca
+buca: build upload clean apply
+
