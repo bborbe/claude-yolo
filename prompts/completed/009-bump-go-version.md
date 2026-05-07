@@ -1,11 +1,12 @@
 ---
-status: committing
+status: completed
 summary: 'Updated ARG GO_VERSION from 1.26.2 to 1.26.3 in Dockerfile and added chore changelog entry under ## Unreleased in CHANGELOG.md.'
 container: claude-yolo-009-bump-go-version
 dark-factory-version: v0.151.2-4-g3dc5753
 created: "2026-05-07T23:15:00Z"
 queued: "2026-05-07T21:14:21Z"
 started: "2026-05-07T21:14:25Z"
+completed: "2026-05-07T21:14:45Z"
 ---
 
 <summary>
