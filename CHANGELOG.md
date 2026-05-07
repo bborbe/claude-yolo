@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.6.3
+
+- chore: bump Go to 1.26.3
+
 ## v0.6.2
 
 - bump updater to v0.23.2 (drops obsolete tools.go-era replaces from migrated projects, stops auto-adding the four cellbuf/go-header/go-diskfs/ginkgolinter replaces)
