@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.7.0
+
+- feat: allow `api.minimax.io` through tinyproxy egress filter for MiniMax Anthropic-compatible API
+
 ## v0.6.3
 
 - chore: bump Go to 1.26.3
