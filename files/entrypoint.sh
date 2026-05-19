@@ -46,7 +46,7 @@ elif [ -n "${YOLO_PROMPT:-}" ]; then
 fi
 
 # Model selection (default: sonnet, auto-resolves to latest version)
-MODEL="${YOLO_MODEL:-sonnet}"
+MODEL="${ANTHROPIC_MODEL:-${YOLO_MODEL:-sonnet}}"
 
 # Output format:
 #   "print"  = raw text via `claude --print`

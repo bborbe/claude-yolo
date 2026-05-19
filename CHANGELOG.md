@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.8.0
+
+- feat: honor `ANTHROPIC_MODEL` env var for model selection (preferred over legacy `YOLO_MODEL`; falls back to `YOLO_MODEL`, then `sonnet`). Required for dark-factory and Anthropic-compatible alt-providers (MiniMax, etc.) to route correctly when `ANTHROPIC_BASE_URL` is set.
+
 ## v0.7.0
 
 - feat: allow `api.minimax.io` through tinyproxy egress filter for MiniMax Anthropic-compatible API
