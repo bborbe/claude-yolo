@@ -43,6 +43,8 @@ if [ -n "${YOLO_PROMPT_FILE:-}" ] && [ -f "${YOLO_PROMPT_FILE}" ]; then
 elif [ -n "${YOLO_PROMPT:-}" ]; then
     PROMPT_FILE=$(mktemp /tmp/yolo-prompt.XXXXXX)
     printf '%s' "$YOLO_PROMPT" > "$PROMPT_FILE"
+    # mktemp creates files mode 0600 owned by root; node user (via setpriv) must read it.
+    chmod 0644 "$PROMPT_FILE"
 fi
 
 # Model selection (default: sonnet, auto-resolves to latest version)
