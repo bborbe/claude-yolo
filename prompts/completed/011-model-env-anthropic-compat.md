@@ -1,11 +1,12 @@
 ---
-status: committing
+status: completed
 summary: Updated MODEL resolution in files/entrypoint.sh to prefer ANTHROPIC_MODEL over YOLO_MODEL, and added the Unreleased CHANGELOG entry.
 container: claude-yolo-exec-011-model-env-anthropic-compat
 dark-factory-version: v0.162.0
 created: "2026-05-19T21:25:00Z"
 queued: "2026-05-19T19:29:30Z"
 started: "2026-05-19T19:29:40Z"
+completed: "2026-05-19T19:30:07Z"
 ---
 
 <summary>
