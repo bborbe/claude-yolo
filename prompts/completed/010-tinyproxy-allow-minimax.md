@@ -1,11 +1,12 @@
 ---
-status: committing
+status: completed
 summary: 'Added ^api\.minimax\.io$ to files/tinyproxy-allowlist after the anthropic.com entry and added ## Unreleased CHANGELOG entry for the MiniMax egress allowlist addition.'
 container: claude-yolo-exec-010-tinyproxy-allow-minimax
 dark-factory-version: v0.162.0
 created: "2026-05-19T19:50:00Z"
 queued: "2026-05-19T17:50:25Z"
 started: "2026-05-19T17:50:49Z"
+completed: "2026-05-19T17:51:59Z"
 ---
 
 <summary>
