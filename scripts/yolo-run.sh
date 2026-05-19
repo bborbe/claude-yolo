@@ -59,9 +59,9 @@ echo "Starting claude-yolo container..."
 CONTAINER_ID=$(docker run -dit --rm \
     --cap-add=NET_ADMIN \
     --cap-add=NET_RAW \
-    -e ANTHROPIC_BASE_URL="$ANTHROPIC_BASE_URL" \
-    -e ANTHROPIC_AUTH_TOKEN="$ANTHROPIC_AUTH_TOKEN" \
-    -e ANTHROPIC_MODEL="$ANTHROPIC_MODEL" \
+    -e ANTHROPIC_BASE_URL="${ANTHROPIC_BASE_URL:-}" \
+    -e ANTHROPIC_AUTH_TOKEN="${ANTHROPIC_AUTH_TOKEN:-}" \
+    -e ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-}" \
     -e YOLO_PROMPT="$PROMPT" \
     -v "$GIT_ROOT:/workspace" \
     -v "$CLAUDE_YOLO_DIR:/home/node/.claude" \
