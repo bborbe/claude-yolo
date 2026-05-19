@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.8.1
+
+- fix: make one-shot prompt file readable by `node` user (was mode 0600 owned by root; `setpriv` to `node` user could not read it). Affects `docker run -e YOLO_PROMPT="..."` callers (e.g. `./scripts/yolo-run.sh` with an inline prompt). dark-factory was unaffected because it uses `YOLO_PROMPT_FILE` with a pre-mounted file.
+- feat: `scripts/yolo-run.sh` now passes `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN`, and `ANTHROPIC_MODEL` through to the container (safe under `set -u` via `${VAR:-}` fallback), enabling MiniMax and other Anthropic-compatible alt-provider routing from the host shell.
+
 ## v0.8.0
 
 - feat: honor `ANTHROPIC_MODEL` env var for model selection (preferred over legacy `YOLO_MODEL`; falls back to `YOLO_MODEL`, then `sonnet`). Required for dark-factory and Anthropic-compatible alt-providers (MiniMax, etc.) to route correctly when `ANTHROPIC_BASE_URL` is set.
