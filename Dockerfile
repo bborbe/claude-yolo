@@ -5,6 +5,7 @@ ARG CLAUDE_CODE_VERSION=latest
 ARG GO_VERSION=1.26.3
 ARG TARGETARCH
 ARG UPDATER_VERSION=0.23.2
+ARG ASTGREP_VERSION=latest
 
 ENV TZ="${TZ:-Europe/Berlin}"
 
@@ -100,7 +101,9 @@ RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
   go install golang.org/x/tools/cmd/goimports@latest && \
   rm -rf /home/node/.cache/go-build
 
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
+RUN npm install -g \
+    @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} \
+    @ast-grep/cli@${ASTGREP_VERSION}
 
 WORKDIR /workspace
 

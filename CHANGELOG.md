@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat: add `@ast-grep/cli` to the image (new `ARG ASTGREP_VERSION=latest`) so the pr-reviewer agent's mechanical-rules step can run.
+
 ## v0.8.1
 
 - fix: make one-shot prompt file readable by `node` user (was mode 0600 owned by root; `setpriv` to `node` user could not read it). Affects `docker run -e YOLO_PROMPT="..."` callers (e.g. `./scripts/yolo-run.sh` with an inline prompt). dark-factory was unaffected because it uses `YOLO_PROMPT_FILE` with a pre-mounted file.
