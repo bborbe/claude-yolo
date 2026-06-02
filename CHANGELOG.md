@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.9.1
+
+- bump Go to 1.26.4
+
 ## v0.9.0
 
 - feat: add `@ast-grep/cli` to the image (new `ARG ASTGREP_VERSION=latest`) so the pr-reviewer agent's mechanical-rules step can run.
