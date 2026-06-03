@@ -11,25 +11,25 @@ ENV TZ="${TZ:-Europe/Berlin}"
 
 # Install dev tools + firewall deps
 RUN --mount=type=cache,target=/var/cache/apt \
-    --mount=type=cache,target=/var/lib/apt/lists \
-    apt-get update && apt-get install -y --no-install-recommends \
-    less \
-    git \
-    curl \
-    procps \
-    sudo \
-    fzf \
-    zsh \
-    unzip \
-    gnupg2 \
-    gh \
-    iptables \
-    iproute2 \
-    tinyproxy \
-    jq \
-    ripgrep \
-    screen \
-    expect \
+	--mount=type=cache,target=/var/lib/apt/lists \
+	apt-get update && apt-get install -y --no-install-recommends \
+	less \
+	git \
+	curl \
+	procps \
+	sudo \
+	fzf \
+	zsh \
+	unzip \
+	gnupg2 \
+	gh \
+	iptables \
+	iproute2 \
+	tinyproxy \
+	jq \
+	ripgrep \
+	screen \
+	expect \
 	shellcheck \
 	tree \
 	fd-find \
