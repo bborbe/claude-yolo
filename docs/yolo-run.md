@@ -16,7 +16,7 @@ yolo-run.sh [--env-file <path>]... [path] ["prompt"]
 | `<path> "<prompt>"` | One-shot | Mount `<path>`'s git root, run prompt, exit |
 | `--env-file <path>` / `--env-file=<path>` | (modifier) | Forward an env file to `docker run`. Repeatable. Leading `~`/`~/` expanded to `$HOME` |
 
-Single-arg disambiguation: if the arg is an existing directory/file OR `git rev-parse --show-toplevel` succeeds inside it, it's treated as a path; otherwise as a prompt string. **Gotcha**: a prompt string that happens to be the name of an existing path in cwd (e.g. `src`, `bin`, `docs`) is silently interpreted as a path, not a prompt. To force prompt interpretation, prepend a leading space or use the two-arg form: `yolo-run.sh . "src"` (mount cwd, prompt = "src").
+Single-arg disambiguation: if the arg is an existing directory/file OR `git rev-parse --show-toplevel` succeeds inside it, it's treated as a path; otherwise as a prompt string. **Gotcha**: a prompt string that happens to be the name of an existing path in cwd (e.g. `src`, `bin`, `docs`) is silently interpreted as a path, not a prompt. To force prompt interpretation, use the two-arg form: `yolo-run.sh . "src"` (mount cwd, prompt = `src`).
 
 The default file `$CLAUDE_YOLO_DIR/env` (typically `~/.claude-yolo/env`) is auto-loaded into the container if it exists; no flag needed. Explicit `--env-file` wins over the default on key collision (Docker semantics: later flag overrides). To skip the default load, rename or delete that file.
 

@@ -74,7 +74,7 @@ If you get `BLOCKED`, look at the proxy log inside a running container: `docker 
 |---|---|
 | GitHub | `*.github.com`, `*.githubusercontent.com`, `github.com`, `ghcr.io`, `pkg-containers.githubusercontent.com` |
 | Anthropic / Claude | `api.anthropic.com`, `console.anthropic.com`, `platform.claude.com`, `claude.ai`, `statsig.anthropic.com` |
-| Alternative providers | `api.minimax.io` (Anthropic-compatible — pair with `ANTHROPIC_BASE_URL`) |
+| Alternative providers | `api.minimax.io` (Anthropic-compatible — set `ANTHROPIC_BASE_URL=https://api.minimax.io/anthropic`) |
 | Go modules | `proxy.golang.org`, `sum.golang.org`, `go.dev`, `vuln.go.dev` |
 | npm | `registry.npmjs.org` |
 | Python | `pypi.org`, `files.pythonhosted.org`, `www.python.org` |

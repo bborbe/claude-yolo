@@ -79,9 +79,19 @@ Each invocation of `yolo-run.sh` is supposed to be one container. If you see mul
 docker ps --filter ancestor=bborbe/claude-yolo:latest --format 'table {{.ID}}\t{{.RunningFor}}\t{{.Names}}'
 ```
 
-Kill all at once:
+**Per-workspace cleanup (preferred — bounded blast radius):**
 
 ```bash
+cd /path/to/workspace
+docker kill "$(cat .yolo-lock)" 2>/dev/null && rm .yolo-lock
+```
+
+**Kill ALL running YOLO containers on the host (blast radius warning):**
+
+```bash
+# ⚠️ Kills every YOLO session on this host, not just orphans.
+# A developer with parallel YOLO sessions across workspaces loses all of them.
+# Prefer the per-workspace recipe above. Use this only when no active session exists.
 docker ps --filter ancestor=bborbe/claude-yolo:latest -q | xargs -r docker kill
 ```
 
