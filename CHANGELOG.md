@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat: `scripts/yolo-run.sh` now auto-loads `~/.claude-yolo/env` if present and accepts `--env-file <path>` (Docker-native flag, repeatable). Enables passing secrets like `GH_TOKEN` / `NPM_TOKEN` into the container without mounting host shell config.
+
 ## v0.9.1
 
 - bump Go to 1.26.4

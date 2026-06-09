@@ -1,28 +1,79 @@
 #!/bin/bash
 set -euo pipefail
 
-# Usage: yolo-run.sh [path] ["prompt"]
+# Usage: yolo-run.sh [--env-file <path>]... [path] ["prompt"]
 # If no path given, use current directory
 # If prompt given, run one-shot mode (execute prompt and exit)
+# --env-file <path>  Pass an env file to docker run (repeatable). GNU --env-file=<path> form also accepted.
+#                    Leading ~ or ~/ in the path is expanded to $HOME.
 # Environment:
 #   CLAUDE_YOLO_DIR  Path to Claude config directory (default: ~/.claude-yolo)
+#                    If $CLAUDE_YOLO_DIR/env exists, it is auto-loaded into the container.
 
 CLAUDE_YOLO_DIR="${CLAUDE_YOLO_DIR:-$HOME/.claude-yolo}"
 
 TARGET_DIR="."
 PROMPT=""
+ENV_FILE_ARGS=()
+POSITIONAL=()
+
+# shellcheck disable=SC2088  # Intentional: literal tilde to strip prefix in the case branch below, not a HOME expansion
+expand_tilde() {
+    # Expand leading ~ or ~/ to $HOME (shell does NOT expand these in --env-file=~/x or in quoted strings)
+    case "$1" in
+        "~")     printf '%s\n' "$HOME" ;;
+        "~/"*)   printf '%s\n' "$HOME/${1#\~/}" ;;
+        *)       printf '%s\n' "$1" ;;
+    esac
+}
 
 # Parse arguments
-if [ $# -eq 1 ]; then
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --env-file)
+            [[ $# -ge 2 ]] || { echo "ERROR: --env-file requires a path argument" >&2; exit 1; }
+            envpath="$(expand_tilde "$2")"
+            [[ -f "$envpath" ]] || { echo "ERROR: --env-file path does not exist: $envpath" >&2; exit 1; }
+            ENV_FILE_ARGS+=(--env-file "$envpath")
+            shift 2
+            ;;
+        --env-file=*)
+            envpath="$(expand_tilde "${1#*=}")"
+            [[ -f "$envpath" ]] || { echo "ERROR: --env-file path does not exist: $envpath" >&2; exit 1; }
+            ENV_FILE_ARGS+=(--env-file "$envpath")
+            shift
+            ;;
+        --)
+            shift
+            POSITIONAL+=("$@")
+            break
+            ;;
+        -*)
+            echo "ERROR: unknown option: $1" >&2
+            exit 1
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Replicate legacy single-arg / two-arg semantics on collected positionals
+if [[ ${#POSITIONAL[@]} -eq 1 ]]; then
+    arg="${POSITIONAL[0]}"
     # Could be path OR prompt
-    if [ -d "$1" ] || [ -f "$1" ] || (cd "$1" && git rev-parse --show-toplevel) >/dev/null 2>&1; then
-        TARGET_DIR="$1"
+    if [ -d "$arg" ] || [ -f "$arg" ] || (cd "$arg" && git rev-parse --show-toplevel) >/dev/null 2>&1; then
+        TARGET_DIR="$arg"
     else
-        PROMPT="$1"
+        PROMPT="$arg"
     fi
-elif [ $# -eq 2 ]; then
-    TARGET_DIR="$1"
-    PROMPT="$2"
+elif [[ ${#POSITIONAL[@]} -eq 2 ]]; then
+    TARGET_DIR="${POSITIONAL[0]}"
+    PROMPT="${POSITIONAL[1]}"
+elif [[ ${#POSITIONAL[@]} -gt 2 ]]; then
+    echo "ERROR: too many positional arguments (expected at most 2: [path] [\"prompt\"])" >&2
+    exit 1
 fi
 
 # Find git root
@@ -53,12 +104,20 @@ if [ -f "$LOCK_FILE" ]; then
     rm -f "$LOCK_FILE"
 fi
 
+DEFAULT_ENV_FILE="$CLAUDE_YOLO_DIR/env"
+DEFAULT_ENV_ARGS=()
+if [[ -f "$DEFAULT_ENV_FILE" ]]; then
+    DEFAULT_ENV_ARGS=(--env-file "$DEFAULT_ENV_FILE")
+fi
+
 echo "Starting claude-yolo container..."
 
 # Run container in background with full interactivity
 CONTAINER_ID=$(docker run -dit --rm \
     --cap-add=NET_ADMIN \
     --cap-add=NET_RAW \
+    ${DEFAULT_ENV_ARGS[@]+"${DEFAULT_ENV_ARGS[@]}"} \
+    ${ENV_FILE_ARGS[@]+"${ENV_FILE_ARGS[@]}"} \
     -e ANTHROPIC_BASE_URL="${ANTHROPIC_BASE_URL:-}" \
     -e ANTHROPIC_AUTH_TOKEN="${ANTHROPIC_AUTH_TOKEN:-}" \
     -e ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-}" \

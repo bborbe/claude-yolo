@@ -251,6 +251,20 @@ Container has:
 
 **Claude model:** Edit `files/entrypoint.sh` to change `--model` flag.
 
+**Environment passthrough:**
+
+- `~/.claude-yolo/env` — if present, auto-loaded into the container. One `KEY=VALUE` per line (Docker `--env-file` format). Recommended: `chmod 600 ~/.claude-yolo/env` (typically contains secrets).
+- `--env-file <path>` or `--env-file=<path>` — pass an additional env file for this invocation. May be supplied multiple times. Leading `~` in the path is expanded to `$HOME` (both forms). Explicit flags override the default file on key collision.
+
+Example `~/.claude-yolo/env`:
+
+```
+GH_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+NPM_TOKEN=npm_xxxxxxxxxxxxxxxxxxxx
+```
+
+The file path follows `CLAUDE_YOLO_DIR` — if you've overridden it, the auto-loaded file is `$CLAUDE_YOLO_DIR/env`.
+
 ## Project Structure
 
 ```
