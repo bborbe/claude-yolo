@@ -16,7 +16,7 @@ The two are required together. iptables alone would allow any domain through tin
 ## Request flow
 
 ```
-Claude (UID 1000 'node')
+Claude ('node' user, non-root — UID is remapped at container start to match the host workspace owner, see files/entrypoint.sh)
    ↓ HTTPS_PROXY=http://127.0.0.1:8888
 tinyproxy (UID 0 'root', port 8888)
    ↓ checks allowlist → if no match: 403
@@ -27,7 +27,7 @@ iptables OUTPUT chain
 internet
 ```
 
-`HTTP_PROXY`/`HTTPS_PROXY` are set in `files/entrypoint.sh`. Tools that honor those env vars (curl, git, go, npm, pip, claude) automatically route through tinyproxy. Tools that don't (a hand-rolled TCP client) hit the iptables REJECT and fail.
+`HTTP_PROXY`/`HTTPS_PROXY` (and lowercase `http_proxy`/`https_proxy` for tools like older curl / pip that only honor the lowercase form) are set in `files/entrypoint.sh`. Tools that honor those env vars (curl, git, go, npm, pip, claude) automatically route through tinyproxy. Tools that don't (a hand-rolled TCP client) hit the iptables REJECT and fail.
 
 ## The iptables rules (in order)
 
@@ -35,12 +35,13 @@ From `files/init-firewall.sh`:
 
 1. `INPUT/OUTPUT -i/-o lo ACCEPT` — localhost (so Claude can reach tinyproxy on 127.0.0.1:8888)
 2. `INPUT/OUTPUT -m state ESTABLISHED,RELATED ACCEPT` — return packets for existing connections
-3. `OUTPUT udp/53 --uid-owner 0 ACCEPT` — DNS, root only (so tinyproxy can resolve)
-4. `OUTPUT --uid-owner 0 ACCEPT` — root full outbound (tinyproxy → remote)
-5. `OUTPUT tcp --dport 22 ACCEPT` — SSH (GitHub via SSH)
-6. `OUTPUT tcp --dport 7999 ACCEPT` — Bitbucket Server SSH
-7. `INPUT/OUTPUT host-network ACCEPT` — Docker bridge (volume mounts, hostname resolution)
-8. Policy: `INPUT/FORWARD/OUTPUT DROP` + explicit `REJECT` with `icmp-admin-prohibited` on tail OUTPUT
+3. `OUTPUT udp/53 --uid-owner 0 ACCEPT` — DNS query, root only (so tinyproxy can resolve)
+4. `INPUT udp --sport 53 ACCEPT` — DNS reply return path
+5. `OUTPUT --uid-owner 0 ACCEPT` — root full outbound (tinyproxy → remote)
+6. `OUTPUT tcp --dport 22 ACCEPT` — SSH (GitHub via SSH)
+7. `OUTPUT tcp --dport 7999 ACCEPT` — Bitbucket Server SSH
+8. `INPUT/OUTPUT host-network ACCEPT` — Docker bridge (volume mounts, hostname resolution)
+9. Policy: `INPUT/FORWARD/OUTPUT DROP` + explicit `REJECT` with `icmp-admin-prohibited` on tail OUTPUT
 
 Notably: **SSH on 22 / 7999 bypasses tinyproxy** by design — git push/pull over SSH would otherwise not work, and proxying SSH through an HTTP proxy is awkward. The trade-off: Claude could SSH to an arbitrary host on 22/7999. The threat model accepts this because the container has no SSH keys mounted by default.
 
@@ -56,7 +57,7 @@ Edit `files/tinyproxy-allowlist`. One regex per line. Patterns are anchored — 
 
 Then rebuild: `make build`. The allowlist is baked into the image at build time. Live edits inside a running container won't take effect.
 
-**Verify the addition** end-to-end with `make buca` style canary:
+**Verify the addition** end-to-end with a smoke test:
 
 ```bash
 make build
@@ -90,7 +91,7 @@ See `files/tinyproxy-allowlist` for the live list. Categories as of this writing
 1. **Negative**: `curl https://example.com` through the proxy must fail. If it succeeds, the allowlist is broken open → exit 1.
 2. **Positive**: `curl https://api.github.com/zen` through the proxy must succeed. If it fails, the firewall blocked something it shouldn't → exit 1.
 
-Either failure aborts container startup. The check is silent in normal runs (`DEBUG=1` env var unmutes it for diagnostics).
+Either failure aborts container startup. The firewall script itself always runs; what `DEBUG=1` controls is whether the entrypoint (`files/entrypoint.sh:20-23`) redirects all firewall-init output to `/dev/null`. Set `DEBUG=1` to see the init output for diagnostics.
 
 ## Threat model
 

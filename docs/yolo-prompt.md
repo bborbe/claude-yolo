@@ -20,8 +20,8 @@ Both arguments are required.
 1. Validates `<project-path>` is a git repo (`git rev-parse --show-toplevel`)
 2. Builds the prompt string `/run-prompt <prompt-number-or-name>`
 3. Delegates to `yolo-run.sh "<git-root>" "/run-prompt <id>"` (sibling script in the same directory)
-4. The container executes the `/run-prompt` slash command (must be installed in `~/.claude-yolo/commands/`)
-5. `/run-prompt` finds the matching file under `prompts/`, executes its content, and archives the prompt on success
+4. The container reads `/run-prompt` as a Claude slash command (a markdown file in `~/.claude-yolo/commands/`, not an executable). Claude treats its content as a command prompt
+5. The `/run-prompt` slash command finds the matching file under `prompts/`, executes its content, and archives the prompt on success
 
 This is one-shot mode: the container runs, completes the prompt, exits, and `--rm`s itself.
 

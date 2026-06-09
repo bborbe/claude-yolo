@@ -14,7 +14,7 @@ Common YOLO container failures and how to recover. Symptoms first; root-cause + 
 | `ERROR: Firewall verification failed - reached https://example.com` | Allowlist file got corrupted or default-deny is off | Inspect `files/tinyproxy-allowlist` + `files/tinyproxy.conf` (`FilterDefaultDeny Yes` must be present); rebuild |
 | `ERROR: Firewall verification failed - cannot reach https://api.github.com` | DNS broken inside container, or iptables rules dropped traffic before tinyproxy | `DEBUG=1` env to unmute firewall init; check `iptables -L -v` inside the container; usually a missing `host-network` route |
 
-## `.yolo-lock` cleanup
+## yolo-lock cleanup
 
 `.yolo-lock` lives at the git root (the mounted `/workspace`). It contains the container ID. The script's trap (`yolo-run.sh:82`) removes it on EXIT/INT/TERM — but a `kill -9`, host crash, or docker daemon restart can orphan it.
 
@@ -59,7 +59,7 @@ Or the lazy form — just re-run `yolo-run.sh`; if the container is dead it auto
 |---|---|---|
 | Logs flow but never exits | Claude is still working — stream-json hasn't sent `done` event | Wait, or `docker ps` to confirm container is still running |
 | Logs stop, no exit | Claude crashed silently | `docker inspect <id> --format '{{.State.ExitCode}}'`; non-zero → bug. Re-run with `YOLO_OUTPUT=json` for raw stream-json |
-| `claude --print` mode produces no output | Anthropic API auth missing | Confirm `ANTHROPIC_AUTH_TOKEN` is set on the host before invoking; helper forwards it via `-e ANTHROPIC_AUTH_TOKEN` |
+| `claude --print` mode produces no output | Anthropic API auth missing | Confirm `ANTHROPIC_AUTH_TOKEN` is set on the host before invoking; helper forwards it via `-e ANTHROPIC_AUTH_TOKEN`. Note: the official Anthropic CLI also accepts `ANTHROPIC_API_KEY`, but this helper does NOT forward that variant — only `ANTHROPIC_AUTH_TOKEN`. If your shell has `ANTHROPIC_API_KEY` set, rename it or also export `ANTHROPIC_AUTH_TOKEN` |
 
 ## Build failures
 

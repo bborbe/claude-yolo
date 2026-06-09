@@ -5,7 +5,7 @@ Launches the YOLO container with Claude Code inside. Wraps `docker run` with sen
 ## Synopsis
 
 ```
-yolo-run.sh [path] ["prompt"]
+yolo-run.sh [--env-file <path>]... [path] ["prompt"]
 ```
 
 | Args | Mode | Behavior |
@@ -14,19 +14,26 @@ yolo-run.sh [path] ["prompt"]
 | `<path>` | Interactive | Mount `<path>`'s git root, attach |
 | `"<prompt>"` (single arg that isn't a path) | One-shot | Mount cwd, run prompt, exit |
 | `<path> "<prompt>"` | One-shot | Mount `<path>`'s git root, run prompt, exit |
+| `--env-file <path>` / `--env-file=<path>` | (modifier) | Forward an env file to `docker run`. Repeatable. Leading `~`/`~/` expanded to `$HOME` |
 
 Single-arg disambiguation: if the arg is an existing directory/file OR `git rev-parse --show-toplevel` succeeds inside it, it's treated as a path; otherwise as a prompt string.
 
+The default file `$CLAUDE_YOLO_DIR/env` (typically `~/.claude-yolo/env`) is auto-loaded into the container if it exists; no flag needed. Explicit `--env-file` wins over the default on key collision (Docker semantics: later flag overrides). To skip the default load, rename or delete that file.
+
 ## Environment variables
 
-| Var | Effect | Default |
-|---|---|---|
-| `CLAUDE_YOLO_DIR` | Host path mounted at `/home/node/.claude` inside container — holds `CLAUDE.md`, slash commands, plugins | `~/.claude-yolo` |
-| `ANTHROPIC_BASE_URL` | Forwarded to container — points Claude at an alternate Anthropic-compatible API (e.g. MiniMax) | unset (uses official Anthropic) |
-| `ANTHROPIC_AUTH_TOKEN` | Forwarded to container — API auth | unset (Claude will prompt if needed) |
-| `ANTHROPIC_MODEL` | Forwarded to container — overrides default model | unset (container default: sonnet) |
+| Var | Where set | Effect | Default |
+|---|---|---|---|
+| `CLAUDE_YOLO_DIR` | Host | Host path mounted at `/home/node/.claude` inside container — holds `CLAUDE.md`, slash commands, plugins. Also defines the auto-loaded env file (`$CLAUDE_YOLO_DIR/env`). | `~/.claude-yolo` |
+| `ANTHROPIC_BASE_URL` | Host → container | Points Claude at an alternate Anthropic-compatible API (e.g. MiniMax) | unset (official Anthropic) |
+| `ANTHROPIC_AUTH_TOKEN` | Host → container | API auth. Note: the project chose this name; the official Anthropic CLI also accepts `ANTHROPIC_API_KEY`, but this helper does NOT forward that variant — only `ANTHROPIC_AUTH_TOKEN` | unset (Claude prompts if needed) |
+| `ANTHROPIC_MODEL` | Host → container | Overrides default model. Falls back to `YOLO_MODEL` inside the container, then `sonnet` | unset |
+| `YOLO_MODEL` | Container | Legacy fallback for model selection — used by the entrypoint when `ANTHROPIC_MODEL` is unset. Set via `-e YOLO_MODEL=...` on raw `docker run` (or via `$CLAUDE_YOLO_DIR/env` if auto-load is desired) | `sonnet` |
+| `YOLO_OUTPUT` | Container | One-shot output format: `print` (raw text), `json` (raw stream-json), unset/`stream` (formatted) | unset (formatted) |
+| `YOLO_PROMPT` | Container | Inline prompt for one-shot mode. Set by `yolo-run.sh` from its 2nd positional arg | unset |
+| `YOLO_PROMPT_FILE` | Container | Alternative to `YOLO_PROMPT` — path to a mounted file containing the prompt. Avoids shell-quoting issues with special characters. Used by dark-factory | unset |
 
-All four are forwarded via `-e VAR="${VAR:-}"` — safe under `set -u`; unset on host means unset in container.
+Host-side vars listed under "Host → container" are forwarded by `yolo-run.sh` via `-e VAR="${VAR:-}"` — safe under `set -u`; unset on host means unset in container. Container-only vars require either a raw `docker run -e VAR=...` or auto-load via `$CLAUDE_YOLO_DIR/env`.
 
 ## What gets mounted
 
@@ -47,7 +54,7 @@ All four are forwarded via `-e VAR="${VAR:-}"` — safe under `set -u`; unset on
 | Present + container alive | `ERROR: YOLO already running in <git-root>` → exit 1 (prevents accidental double-launch on the same workspace) |
 | Present + container dead | Auto-removed, normal launch |
 
-Cleanup happens automatically on EXIT/INT/TERM via trap. `kill -9`, host crash, or `docker kill` can orphan the file — see `docs/troubleshooting.md#yolo-lock-cleanup`.
+Cleanup happens automatically on EXIT/INT/TERM via trap. `kill -9`, host crash, or `docker kill` can orphan the file — see `docs/troubleshooting.md` → "yolo-lock cleanup".
 
 ## Docker invocation
 
@@ -57,6 +64,8 @@ The script runs:
 docker run -dit --rm \
     --cap-add=NET_ADMIN \
     --cap-add=NET_RAW \
+    [--env-file $CLAUDE_YOLO_DIR/env]   # auto if file exists \
+    [--env-file <path>]...              # one per --env-file flag \
     -e ANTHROPIC_BASE_URL="..." \
     -e ANTHROPIC_AUTH_TOKEN="..." \
     -e ANTHROPIC_MODEL="..." \
@@ -68,17 +77,20 @@ docker run -dit --rm \
 
 - `-d` detached, `-i` stdin open, `-t` TTY allocated, `--rm` clean up on exit
 - `--cap-add=NET_ADMIN --cap-add=NET_RAW` — required for `init-firewall.sh` to set iptables rules (see `docs/network-firewall.md`)
+- `--env-file` lines appear only when applicable; default file first, explicit flags second (Docker semantics: later wins on key collision)
 
 ## Modes (under the hood)
+
+All four commands are also wrapped by `setpriv --reuid=node --regid=node --init-groups --` in the actual entrypoint to drop from root to the (remapped) `node` user; omitted in the table for clarity.
 
 | Mode | Trigger | Container entrypoint behavior |
 |---|---|---|
 | Interactive | `YOLO_PROMPT` empty | `exec claude --dangerously-skip-permissions --model "$MODEL"` (stdin attached) |
-| One-shot (default formatter) | `YOLO_PROMPT` set, `YOLO_OUTPUT` unset/`stream` | `claude -p --output-format stream-json --verbose < $PROMPT_FILE \| stream-formatter.py` |
-| One-shot (raw print) | `YOLO_PROMPT` set, `YOLO_OUTPUT=print` | `claude --print -p --verbose < $PROMPT_FILE` |
-| One-shot (raw JSON) | `YOLO_PROMPT` set, `YOLO_OUTPUT=json` | `claude -p --output-format stream-json --verbose < $PROMPT_FILE` |
+| One-shot (default formatter) | `YOLO_PROMPT` set, `YOLO_OUTPUT` unset/`stream` | `claude -p --dangerously-skip-permissions --model "$MODEL" --output-format stream-json --verbose < $PROMPT_FILE \| stream-formatter.py` |
+| One-shot (raw print) | `YOLO_PROMPT` set, `YOLO_OUTPUT=print` | `claude --print -p --dangerously-skip-permissions --model "$MODEL" --verbose < $PROMPT_FILE` |
+| One-shot (raw JSON) | `YOLO_PROMPT` set, `YOLO_OUTPUT=json` | `claude -p --dangerously-skip-permissions --model "$MODEL" --output-format stream-json --verbose < $PROMPT_FILE` |
 
-`YOLO_OUTPUT` is read by the container entrypoint, not the host script. Set it via `-e YOLO_OUTPUT=...` on a raw `docker run`, or pre-set in `~/.claude-yolo/env` (see `README.md#configuration`) if env-passthrough is enabled.
+`YOLO_OUTPUT` is read by the container entrypoint, not the host script. Set it via `-e YOLO_OUTPUT=...` on a raw `docker run`, or include `YOLO_OUTPUT=json` in `$CLAUDE_YOLO_DIR/env` so the auto-load picks it up.
 
 ## Interactive: attach + detach
 
