@@ -10,6 +10,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+- feat: `scripts/yolo-run.sh` now auto-loads `~/.claude-yolo/env` if present and accepts `--env-file <path>` (Docker-native flag, repeatable). Enables passing secrets like `GH_TOKEN` / `NPM_TOKEN` into the container without mounting host shell config.
 - docs: add operational guides — `docs/network-firewall.md` (tinyproxy + iptables architecture), `docs/troubleshooting.md` (lock files, proxy, attach, build failures), `docs/yolo-run.md` (script reference), `docs/yolo-prompt.md` (prompt-execution reference).
 
 ## v0.9.1
