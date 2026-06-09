@@ -86,7 +86,7 @@ All four commands are also wrapped by `setpriv --reuid=node --regid=node --init-
 | Mode | Trigger | Container entrypoint behavior |
 |---|---|---|
 | Interactive | `YOLO_PROMPT` empty | `exec claude --dangerously-skip-permissions --model "$MODEL"` (stdin attached) |
-| One-shot (default formatter) | `YOLO_PROMPT` set, `YOLO_OUTPUT` unset/`stream` | `claude -p --dangerously-skip-permissions --model "$MODEL" --output-format stream-json --verbose < $PROMPT_FILE \| stream-formatter.py` |
+| One-shot (default formatter) | `YOLO_PROMPT` set, `YOLO_OUTPUT` unset/`stream` | `claude -p --dangerously-skip-permissions --model "$MODEL" --output-format stream-json --verbose < $PROMPT_FILE \| python3 /usr/local/bin/stream-formatter.py` |
 | One-shot (raw print) | `YOLO_PROMPT` set, `YOLO_OUTPUT=print` | `claude --print -p --dangerously-skip-permissions --model "$MODEL" --verbose < $PROMPT_FILE` |
 | One-shot (raw JSON) | `YOLO_PROMPT` set, `YOLO_OUTPUT=json` | `claude -p --dangerously-skip-permissions --model "$MODEL" --output-format stream-json --verbose < $PROMPT_FILE` |
 

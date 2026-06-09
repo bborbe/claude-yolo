@@ -16,7 +16,7 @@ Common YOLO container failures and how to recover. Symptoms first; root-cause + 
 
 ## yolo-lock cleanup
 
-`.yolo-lock` lives at the git root (the mounted `/workspace`). It contains the container ID. The script's trap (`yolo-run.sh:82`) removes it on EXIT/INT/TERM — but a `kill -9`, host crash, or docker daemon restart can orphan it.
+`.yolo-lock` lives at the git root (the mounted `/workspace`). It contains the container ID. The script's trap (`scripts/yolo-run.sh:141`) removes it on EXIT/INT/TERM — but a `kill -9`, host crash, or docker daemon restart can orphan it.
 
 Manual cleanup:
 
