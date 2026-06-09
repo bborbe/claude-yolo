@@ -116,8 +116,8 @@ echo "Starting claude-yolo container..."
 CONTAINER_ID=$(docker run -dit --rm \
     --cap-add=NET_ADMIN \
     --cap-add=NET_RAW \
-    "${DEFAULT_ENV_ARGS[@]}" \
-    "${ENV_FILE_ARGS[@]}" \
+    ${DEFAULT_ENV_ARGS[@]+"${DEFAULT_ENV_ARGS[@]}"} \
+    ${ENV_FILE_ARGS[@]+"${ENV_FILE_ARGS[@]}"} \
     -e ANTHROPIC_BASE_URL="${ANTHROPIC_BASE_URL:-}" \
     -e ANTHROPIC_AUTH_TOKEN="${ANTHROPIC_AUTH_TOKEN:-}" \
     -e ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-}" \
