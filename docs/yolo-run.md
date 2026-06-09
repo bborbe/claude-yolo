@@ -16,7 +16,7 @@ yolo-run.sh [--env-file <path>]... [path] ["prompt"]
 | `<path> "<prompt>"` | One-shot | Mount `<path>`'s git root, run prompt, exit |
 | `--env-file <path>` / `--env-file=<path>` | (modifier) | Forward an env file to `docker run`. Repeatable. Leading `~`/`~/` expanded to `$HOME` |
 
-Single-arg disambiguation: if the arg is an existing directory/file OR `git rev-parse --show-toplevel` succeeds inside it, it's treated as a path; otherwise as a prompt string.
+Single-arg disambiguation: if the arg is an existing directory/file OR `git rev-parse --show-toplevel` succeeds inside it, it's treated as a path; otherwise as a prompt string. **Gotcha**: a prompt string that happens to be the name of an existing path in cwd (e.g. `src`, `bin`, `docs`) is silently interpreted as a path, not a prompt. To force prompt interpretation, prepend a leading space or use the two-arg form: `yolo-run.sh . "src"` (mount cwd, prompt = "src").
 
 The default file `$CLAUDE_YOLO_DIR/env` (typically `~/.claude-yolo/env`) is auto-loaded into the container if it exists; no flag needed. Explicit `--env-file` wins over the default on key collision (Docker semantics: later flag overrides). To skip the default load, rename or delete that file.
 
@@ -26,7 +26,7 @@ The default file `$CLAUDE_YOLO_DIR/env` (typically `~/.claude-yolo/env`) is auto
 |---|---|---|---|
 | `CLAUDE_YOLO_DIR` | Host | Host path mounted at `/home/node/.claude` inside container — holds `CLAUDE.md`, slash commands, plugins. Also defines the auto-loaded env file (`$CLAUDE_YOLO_DIR/env`). | `~/.claude-yolo` |
 | `ANTHROPIC_BASE_URL` | Host → container | Points Claude at an alternate Anthropic-compatible API (e.g. MiniMax) | unset (official Anthropic) |
-| `ANTHROPIC_AUTH_TOKEN` | Host → container | API auth. Note: the project chose this name; the official Anthropic CLI also accepts `ANTHROPIC_API_KEY`, but this helper does NOT forward that variant — only `ANTHROPIC_AUTH_TOKEN` | unset (Claude prompts if needed) |
+| `ANTHROPIC_AUTH_TOKEN` | Host → container | API auth. Note: the project chose this name; the official Anthropic CLI also accepts `ANTHROPIC_API_KEY`, but this helper does NOT forward that variant — only `ANTHROPIC_AUTH_TOKEN` | unset (interactive: Claude prompts; one-shot: fails) |
 | `ANTHROPIC_MODEL` | Host → container | Overrides default model. Falls back to `YOLO_MODEL` inside the container, then `sonnet` | unset |
 | `YOLO_MODEL` | Container | Legacy fallback for model selection — used by the entrypoint when `ANTHROPIC_MODEL` is unset. Set via `-e YOLO_MODEL=...` on raw `docker run` (or via `$CLAUDE_YOLO_DIR/env` if auto-load is desired) | `sonnet` |
 | `YOLO_OUTPUT` | Container | One-shot output format: `print` (raw text), `json` (raw stream-json), unset/`stream` (formatted) | unset (formatted) |

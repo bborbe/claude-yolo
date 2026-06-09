@@ -38,8 +38,8 @@ From `files/init-firewall.sh`:
 3. `OUTPUT udp/53 --uid-owner 0 ACCEPT` — DNS query, root only (so tinyproxy can resolve)
 4. `INPUT udp --sport 53 ACCEPT` — DNS reply return path
 5. `OUTPUT --uid-owner 0 ACCEPT` — root full outbound (tinyproxy → remote)
-6. `OUTPUT tcp --dport 22 ACCEPT` — SSH (GitHub via SSH)
-7. `OUTPUT tcp --dport 7999 ACCEPT` — Bitbucket Server SSH
+6. `OUTPUT tcp --dport 22 ACCEPT` — SSH (GitHub via SSH). **Note: any UID, including `node` / Claude — not scoped to root**, by design (see threat-model note below)
+7. `OUTPUT tcp --dport 7999 ACCEPT` — Bitbucket Server SSH. Same UID-unscoped intent as rule 6
 8. `INPUT/OUTPUT host-network ACCEPT` — Docker bridge (volume mounts, hostname resolution)
 9. Policy: `INPUT/FORWARD/OUTPUT DROP` + explicit `REJECT` with `icmp-admin-prohibited` on tail OUTPUT
 
@@ -68,7 +68,7 @@ If you get `BLOCKED`, look at the proxy log inside a running container: `docker 
 
 ## Allowed-by-default domains
 
-See `files/tinyproxy-allowlist` for the live list. Categories as of this writing:
+`files/tinyproxy-allowlist` is the authoritative source — table below is a categorized snapshot and may drift; check the file when in doubt:
 
 | Category | Domains |
 |---|---|

@@ -91,7 +91,7 @@ Then sweep `.yolo-lock` files: `find ~/Documents/workspaces -name .yolo-lock -de
 
 1. `docker logs -f <container-id>` — full container output
 2. `docker exec <container-id> /bin/bash` — open a shell in a (suspected) running container; inspect `/tmp/tinyproxy.log`, `iptables -L -v`, `env`
-3. `DEBUG=1 ./scripts/yolo-run.sh ...` — unmutes firewall-init output
+3. `DEBUG=1 ./scripts/yolo-run.sh ...` — unmutes firewall-init output (see `docs/network-firewall.md` → "Verifying the firewall at container start" for the mechanism: `files/entrypoint.sh:20-23` redirects to `/dev/null` unless `DEBUG=1`)
 4. Rebuild from scratch: `docker rmi bborbe/claude-yolo:latest && make build`
 
 ## Related
