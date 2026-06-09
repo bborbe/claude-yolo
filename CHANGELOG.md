@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v0.10.1
 
 - docs: add operational guides — `docs/network-firewall.md` (tinyproxy + iptables architecture), `docs/troubleshooting.md` (lock files, proxy, attach, build failures), `docs/yolo-run.md` (script reference), `docs/yolo-prompt.md` (prompt-execution reference).
 
