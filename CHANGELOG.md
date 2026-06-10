@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.10.3
+
+- feat: `files/entrypoint.sh` honors `DEBUG=1` for setpriv calls — prints `setpriv --dump` (resulting uid/gid/groups/caps) and the upcoming command to stderr before each `exec setpriv ... claude ...` invocation. Useful for diagnosing privilege-drop or capability inheritance issues inside the container.
+
 ## v0.10.2
 
 - feat: `scripts/yolo-run.sh` falls back to `TARGET_DIR` as mount point when target is not a git repo (enables ad-hoc runs in `/tmp` and other non-git directories instead of failing with `ERROR: Not in a git repository`).

@@ -16,6 +16,16 @@ run_as_node() {
     setpriv --reuid=node --regid=node --init-groups -- "$@"
 }
 
+# DEBUG=1: print setpriv's resulting privilege state + the exec'd command (stderr).
+# Use before an `exec setpriv ...` to confirm uid/gid/groups/caps without running the cmd.
+debug_setpriv() {
+    if [ "${DEBUG:-0}" = "1" ]; then
+        echo "=== setpriv --dump (before exec) ===" >&2
+        setpriv --reuid=node --regid=node --init-groups --dump >&2 || true
+        echo "=== exec: $* ===" >&2
+    fi
+}
+
 # Firewall + proxy
 if [ "${DEBUG:-0}" = "1" ]; then
     /usr/local/bin/init-firewall.sh
@@ -61,15 +71,18 @@ if [ -n "${PROMPT_FILE:-}" ]; then
     echo "Starting headless session..."
     # No trap — exec replaces the shell, so EXIT trap would delete the file before claude reads it
     if [ "$OUTPUT" = "print" ]; then
+        debug_setpriv claude --print -p --model "$MODEL" --verbose
         exec setpriv --reuid=node --regid=node --init-groups -- \
             claude --print -p --dangerously-skip-permissions \
             --model "$MODEL" --verbose < "$PROMPT_FILE"
     elif [ "$OUTPUT" = "json" ]; then
+        debug_setpriv claude -p --model "$MODEL" --output-format stream-json --verbose
         exec setpriv --reuid=node --regid=node --init-groups -- \
             claude -p --dangerously-skip-permissions \
             --model "$MODEL" --output-format stream-json --verbose < "$PROMPT_FILE"
     else
         # exec + pipe requires sh -c; pass MODEL and PROMPT_FILE as positional args to avoid quoting issues
+        debug_setpriv "sh -c 'claude -p --model $MODEL --output-format stream-json --verbose | stream-formatter'"
         # shellcheck disable=SC2016
         exec setpriv --reuid=node --regid=node --init-groups -- \
             sh -c 'claude -p --dangerously-skip-permissions --model "$1" \
@@ -80,5 +93,6 @@ if [ -n "${PROMPT_FILE:-}" ]; then
 else
     # Interactive mode
     echo "Starting interactive session..."
+    debug_setpriv claude --model "$MODEL"
     exec setpriv --reuid=node --regid=node --init-groups -- claude --dangerously-skip-permissions --model "${MODEL}"
 fi
