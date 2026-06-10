@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.10.5
+
+- fix: `debug_setpriv` in `files/entrypoint.sh` now uses nested setpriv (`setpriv ... -- setpriv --dump`) instead of `setpriv --reuid=... --dump`. `--dump` is standalone-only and v0.10.3 produced `setpriv: --dump is incompatible with all other options`. Nested form runs `--dump` as the transitioned child so the reported uid/gid/groups/caps match what the exec'd `claude` process actually sees.
+
 ## v0.10.4
 
 - fix: `scripts/yolo-run.sh` forwards host `DEBUG` env var into the container, so `DEBUG=1 yolo-run.sh ...` actually triggers the firewall + setpriv debug paths in `files/entrypoint.sh` (previously dropped on the floor).

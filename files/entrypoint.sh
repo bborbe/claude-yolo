@@ -16,12 +16,13 @@ run_as_node() {
     setpriv --reuid=node --regid=node --init-groups -- "$@"
 }
 
-# DEBUG=1: print setpriv's resulting privilege state + the exec'd command (stderr).
-# Use before an `exec setpriv ...` to confirm uid/gid/groups/caps without running the cmd.
+# DEBUG=1: print setpriv's post-transition privilege state + the exec'd command (stderr).
+# Uses nested setpriv: outer applies --reuid/--regid/--init-groups, inner runs --dump
+# as the transitioned child (--dump is standalone-only, can't combine with transition flags).
 debug_setpriv() {
     if [ "${DEBUG:-0}" = "1" ]; then
-        echo "=== setpriv --dump (before exec) ===" >&2
-        setpriv --reuid=node --regid=node --init-groups --dump >&2 || true
+        echo "=== setpriv --dump (post-transition state) ===" >&2
+        setpriv --reuid=node --regid=node --init-groups -- setpriv --dump >&2 || true
         echo "=== exec: $* ===" >&2
     fi
 }
