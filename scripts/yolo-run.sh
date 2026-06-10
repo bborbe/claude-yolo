@@ -11,6 +11,7 @@ set -euo pipefail
 #                    If $CLAUDE_YOLO_DIR/env exists, it is auto-loaded into the container.
 
 CLAUDE_YOLO_DIR="${CLAUDE_YOLO_DIR:-$HOME/.claude-yolo}"
+CLAUDE_YOLO_VERSION="${CLAUDE_YOLO_VERSION:-latest}"
 
 TARGET_DIR="."
 PROMPT=""
