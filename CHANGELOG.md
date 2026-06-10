@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.10.4
+
+- fix: `scripts/yolo-run.sh` forwards host `DEBUG` env var into the container, so `DEBUG=1 yolo-run.sh ...` actually triggers the firewall + setpriv debug paths in `files/entrypoint.sh` (previously dropped on the floor).
+- fix: `scripts/yolo-run.sh` substitutes `${CLAUDE_YOLO_IMAGE}:${CLAUDE_YOLO_VERSION}` in the `docker run` invocation (image tag was hardcoded `:latest`, ignoring the `CLAUDE_YOLO_VERSION` override declared in v0.10.2). Adds `CLAUDE_YOLO_IMAGE` env var (default `docker.io/bborbe/claude-yolo`) for registry/name override.
+- feat: log line now includes the resolved `${image}:${version}` for clarity.
+
 ## v0.10.3
 
 - feat: `files/entrypoint.sh` honors `DEBUG=1` for setpriv calls — prints `setpriv --dump` (resulting uid/gid/groups/caps) and the upcoming command to stderr before each `exec setpriv ... claude ...` invocation. Useful for diagnosing privilege-drop or capability inheritance issues inside the container.

@@ -11,6 +11,7 @@ set -euo pipefail
 #                    If $CLAUDE_YOLO_DIR/env exists, it is auto-loaded into the container.
 
 CLAUDE_YOLO_DIR="${CLAUDE_YOLO_DIR:-$HOME/.claude-yolo}"
+CLAUDE_YOLO_IMAGE="${CLAUDE_YOLO_IMAGE:-docker.io/bborbe/claude-yolo}"
 CLAUDE_YOLO_VERSION="${CLAUDE_YOLO_VERSION:-latest}"
 
 TARGET_DIR="."
@@ -114,7 +115,7 @@ if [[ -f "$DEFAULT_ENV_FILE" ]]; then
     DEFAULT_ENV_ARGS=(--env-file "$DEFAULT_ENV_FILE")
 fi
 
-echo "Starting claude-yolo container..."
+echo "Starting claude-yolo container ${CLAUDE_YOLO_IMAGE}:${CLAUDE_YOLO_VERSION}..."
 
 # Run container in background with full interactivity
 CONTAINER_ID=$(docker run -dit --rm \
@@ -125,10 +126,11 @@ CONTAINER_ID=$(docker run -dit --rm \
     -e ANTHROPIC_BASE_URL="${ANTHROPIC_BASE_URL:-}" \
     -e ANTHROPIC_AUTH_TOKEN="${ANTHROPIC_AUTH_TOKEN:-}" \
     -e ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-}" \
+    -e DEBUG="${DEBUG:-}" \
     -e YOLO_PROMPT="$PROMPT" \
     -v "$GIT_ROOT:/workspace" \
     -v "$CLAUDE_YOLO_DIR:/home/node/.claude" \
-    docker.io/bborbe/claude-yolo:latest)
+    "${CLAUDE_YOLO_IMAGE}:${CLAUDE_YOLO_VERSION}")
 
 # Write container ID to lock file
 echo "$CONTAINER_ID" > "$LOCK_FILE"
