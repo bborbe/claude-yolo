@@ -77,13 +77,16 @@ elif [[ ${#POSITIONAL[@]} -gt 2 ]]; then
     exit 1
 fi
 
-# Find git root
-if ! GIT_ROOT=$(cd "$TARGET_DIR" && git rev-parse --show-toplevel 2>/dev/null); then
-    echo "ERROR: Not in a git repository: $TARGET_DIR"
-    exit 1
+# Find git root, fall back to TARGET_DIR if not a git repo
+if GIT_ROOT=$(cd "$TARGET_DIR" && git rev-parse --show-toplevel 2>/dev/null); then
+    echo "Git root detected: $GIT_ROOT"
+else
+    if ! GIT_ROOT=$(cd "$TARGET_DIR" 2>/dev/null && pwd); then
+        echo "ERROR: target directory does not exist: $TARGET_DIR" >&2
+        exit 1
+    fi
+    echo "No git repo — mounting directory directly: $GIT_ROOT"
 fi
-
-echo "Git root detected: $GIT_ROOT"
 
 if [ -n "$PROMPT" ]; then
     echo "Mode: One-shot (execute prompt and exit)"

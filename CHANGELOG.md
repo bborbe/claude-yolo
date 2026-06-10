@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.10.2
+
+- feat: `scripts/yolo-run.sh` falls back to `TARGET_DIR` as mount point when target is not a git repo (enables ad-hoc runs in `/tmp` and other non-git directories instead of failing with `ERROR: Not in a git repository`).
+- feat: `scripts/yolo-run.sh` honors `CLAUDE_YOLO_VERSION` env var (default `latest`) for image tag override.
+
 ## v0.10.1
 
 - docs: add operational guides — `docs/network-firewall.md` (tinyproxy + iptables architecture), `docs/troubleshooting.md` (lock files, proxy, attach, build failures), `docs/yolo-run.md` (script reference), `docs/yolo-prompt.md` (prompt-execution reference).
