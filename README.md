@@ -29,6 +29,31 @@ cp examples/CLAUDE.md ~/.claude-yolo/
 # See: https://github.com/bborbe/claude-yolo-plugin
 ```
 
+### 3. Authenticate the YOLO Claude session
+
+`~/.claude-yolo` needs its **own** Claude OAuth token — separate from your main `~/.claude` login. The token lives in `~/.claude-yolo/.credentials.json` (or `.claude.json` on older versions) and **expires periodically**, so plan to re-login when:
+
+- `dark-factory` (or any wrapper using `~/.claude-yolo`) fails with `Claude OAuth token missing or expired in /Users/<you>/.claude-yolo`
+- The healthcheck `claude` probe returns `stdout=""` despite the container starting cleanly
+- You see `Not logged in · Please run /login` inside a YOLO interactive session
+
+**Refresh the token** (one of two ways):
+
+```bash
+# (a) Inside an interactive YOLO container — recommended; closest to how dark-factory uses it
+./scripts/yolo-run.sh
+# in the Claude session, type:
+/login
+# follow the device-code flow in your browser; on success the container reports
+# "Login successful" — exit, and ~/.claude-yolo/.credentials.json is updated
+
+# (b) On the host with the YOLO config dir set explicitly
+CLAUDE_CONFIG_DIR=~/.claude-yolo claude
+# inside the session, run /login as above
+```
+
+Both paths write to the same file — the container path is preferred because it's exactly the environment dark-factory will use.
+
 **What's in `~/.claude-yolo`?**
 
 ```
@@ -330,6 +355,34 @@ my-app/
 - Restricted network access (firewall)
 
 **Key Insight:** Isolation enables autonomy. Auto-approve mode is safe because the container can't access production systems.
+
+## Troubleshooting
+
+### `Claude OAuth token missing or expired in ~/.claude-yolo`
+
+Refresh the YOLO Claude session — see [Authenticate the YOLO Claude session](#3-authenticate-the-yolo-claude-session). The token in `~/.claude-yolo/.credentials.json` expires periodically and is independent of your main `~/.claude` login.
+
+### Healthcheck `claude` probe fails with `stdout=""` / container exits non-zero
+
+Two distinct causes; check both:
+
+1. **Expired YOLO OAuth token** — refresh per the section above.
+2. **Missing Linux capabilities on OrbStack / rootless Docker** — the entrypoint's `init-firewall.sh` calls `iptables`, which OrbStack rejects without `NET_ADMIN` + `NET_RAW`. Any wrapper invoking the image directly MUST pass:
+
+   ```bash
+   docker run --rm \
+     --cap-add=NET_ADMIN --cap-add=NET_RAW \
+     -v ~/.claude-yolo:/home/node/.claude \
+     -v <project>:/workspace \
+     docker.io/bborbe/claude-yolo:latest \
+     <command>
+   ```
+
+   Symptom without the caps: `iptables: Permission denied (you must be root)` and the entrypoint exits non-zero before `claude` ever starts.
+
+### `Not logged in · Please run /login` inside an interactive YOLO session
+
+The host token file is missing or unreadable from the container. Run `/login` inside the session as instructed — the credentials write back to `~/.claude-yolo` and persist for the next container.
 
 ## License
 
