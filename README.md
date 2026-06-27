@@ -276,6 +276,15 @@ Container has:
 
 **Claude model:** Edit `files/entrypoint.sh` to change `--model` flag.
 
+**Claude Code version:** Pinned in `Dockerfile` (`ARG CLAUDE_CODE_VERSION=…`). The image bundles a specific `@anthropic-ai/claude-code` npm release rather than tracking `latest`, so a rebuild is reproducible and an upstream regression cannot land silently between image tags. To bump:
+
+1. Pick a release from [`@anthropic-ai/claude-code` on npm](https://www.npmjs.com/package/@anthropic-ai/claude-code?activeTab=versions).
+2. Edit `ARG CLAUDE_CODE_VERSION=…` in `Dockerfile`.
+3. Smoke-test before tagging: build the image, set a project's `.dark-factory.yaml` `containerImage:` to the new tag, run `dark-factory daemon` against a small spec, confirm prompt generation produces files (no `Unknown command: /dark-factory:…` error from claude).
+4. Tag a new claude-yolo release. Add a CHANGELOG bullet naming the new claude-code version and what motivated the bump.
+
+Override at build time without editing: `docker buildx build --build-arg CLAUDE_CODE_VERSION=2.1.180 …`. The default pin protects unattended rebuilds; explicit override is the deliberate-bump path.
+
 **Environment passthrough:**
 
 - `~/.claude-yolo/env` — if present, auto-loaded into the container. One `KEY=VALUE` per line (Docker `--env-file` format). Recommended: `chmod 600 ~/.claude-yolo/env` (typically contains secrets).
