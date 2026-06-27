@@ -1,7 +1,16 @@
 FROM node:22
 
 ARG TZ
-ARG CLAUDE_CODE_VERSION=latest
+# Pin @anthropic-ai/claude-code to a known-good version. Floating `latest`
+# made every image rebuild a silent upstream-regression risk — see the
+# 2026-06-27 incident where v0.11.0 picked up a Claude release whose
+# marketplace-consent gate broke headless `claude -p` plugin discovery
+# (dark-factory spec generation died with `Unknown command: /dark-factory:
+# generate-prompts-for-spec`). 2.1.169 is the last version known-good
+# against dark-factory's scenario suite. Bump deliberately: edit + tag a
+# new claude-yolo release; smoke-test by running a dark-factory spec
+# generation against the new image.
+ARG CLAUDE_CODE_VERSION=2.1.169
 ARG GO_VERSION=1.26.4
 ARG TARGETARCH
 ARG UPDATER_VERSION=0.23.2
