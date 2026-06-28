@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v0.12.0
 
 - feat: allow YOLO container egress to the host's claude-code-router (or any host-side service). `files/tinyproxy-allowlist` now whitelists `^host\.docker\.internal$`, and `scripts/yolo-run.sh` adds `--add-host=host.docker.internal:host-gateway` to the `docker run` line (no-op on macOS Docker Desktop where the alias is built-in; required on Linux). Enables `ANTHROPIC_BASE_URL=http://host.docker.internal:8788` inside the container to reach the host router for unified provider routing + observability across interactive `clauder` sessions and dark-factory containers.
 
