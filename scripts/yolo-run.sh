@@ -121,6 +121,7 @@ echo "Starting claude-yolo container ${CLAUDE_YOLO_IMAGE}:${CLAUDE_YOLO_VERSION}
 CONTAINER_ID=$(docker run -dit --rm \
     --cap-add=NET_ADMIN \
     --cap-add=NET_RAW \
+    --add-host=host.docker.internal:host-gateway \
     ${DEFAULT_ENV_ARGS[@]+"${DEFAULT_ENV_ARGS[@]}"} \
     ${ENV_FILE_ARGS[@]+"${ENV_FILE_ARGS[@]}"} \
     -e ANTHROPIC_BASE_URL="${ANTHROPIC_BASE_URL:-}" \
