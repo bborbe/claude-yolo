@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat: allow YOLO container egress to the host's claude-code-router (or any host-side service). `files/tinyproxy-allowlist` now whitelists `^host\.docker\.internal$`, and `scripts/yolo-run.sh` adds `--add-host=host.docker.internal:host-gateway` to the `docker run` line (no-op on macOS Docker Desktop where the alias is built-in; required on Linux). Enables `ANTHROPIC_BASE_URL=http://host.docker.internal:8788` inside the container to reach the host router for unified provider routing + observability across interactive `clauder` sessions and dark-factory containers.
+
 ## v0.11.1
 
 - fix: pin `@anthropic-ai/claude-code` to `2.1.169` instead of `latest`. Floating `latest` made every image rebuild a silent upstream-regression risk — landed on 2026-06-27 when `v0.11.0` (built later than `v0.10.1`) picked up a Claude release whose marketplace-consent gate broke headless `claude -p` plugin discovery, killing dark-factory spec generation with `Unknown command: /dark-factory:generate-prompts-for-spec`. `2.1.169` is the version that shipped in `claude-yolo:v0.10.1` and is the last release verified against dark-factory's scenario suite. Bump procedure documented in README — smoke-test required before tagging. Override at build time with `--build-arg CLAUDE_CODE_VERSION=…` for the deliberate-bump path.

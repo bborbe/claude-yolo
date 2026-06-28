@@ -10,6 +10,7 @@
 ^files\.pythonhosted\.org$
 ^ghcr\.io$
 ^github\.com$
+^host\.docker\.internal$
 ^go\.dev$
 ^marketplace\.visualstudio\.com$
 ^pkg-containers\.githubusercontent\.com$
