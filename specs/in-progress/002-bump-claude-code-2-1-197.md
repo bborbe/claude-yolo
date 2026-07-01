@@ -1,11 +1,12 @@
 ---
-status: prompted
+status: verifying
 tags:
     - dark-factory
     - spec
 approved: "2026-07-01T09:59:33Z"
 generating: "2026-07-01T09:59:34Z"
 prompted: "2026-07-01T10:04:31Z"
+verifying: "2026-07-01T10:07:18Z"
 branch: dark-factory/bump-claude-code-2-1-197
 ---
 
