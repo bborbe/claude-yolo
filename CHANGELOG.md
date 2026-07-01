@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v0.13.0
 
 - feat: bump `@anthropic-ai/claude-code` from `2.1.169` to `2.1.197` (Sonnet 5 default at 1M-token window, background-agent auto-resume, 16 bug fixes). Validated by `dark-factory healthcheck` passing all seven probes against the freshly built image — the same probe that caught the 2026-06-27 marketplace-consent regression, so the `Unknown command: /dark-factory:generate-prompts-for-spec` failure does not recur.
 
