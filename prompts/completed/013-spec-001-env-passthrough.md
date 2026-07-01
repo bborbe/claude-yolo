@@ -1,8 +1,8 @@
 ---
 status: completed
-spec: ["001"]
+spec: [001-env-passthrough]
 summary: 'Added Docker-native env-file passthrough to scripts/yolo-run.sh: auto-load $CLAUDE_YOLO_DIR/env, accept repeatable --env-file flag (space and GNU = forms) with tilde expansion, and preserved the legacy single-arg path-vs-prompt heuristic. Updated README Configuration section and CHANGELOG Unreleased.'
-container: claude-yolo-env-passthrough-exec-013-spec-001-env-passthrough
+execution_id: claude-yolo-env-passthrough-exec-013-spec-001-env-passthrough
 dark-factory-version: v0.175.0
 created: "2026-06-09T12:40:00Z"
 queued: "2026-06-09T12:39:32Z"
