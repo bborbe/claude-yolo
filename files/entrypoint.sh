@@ -67,28 +67,47 @@ MODEL="${ANTHROPIC_MODEL:-${YOLO_MODEL:-sonnet}}"
 #   default  = stream-json piped through the formatter
 OUTPUT="${YOLO_OUTPUT:-stream}"
 
+# Claude Code 2.1.197+ no longer auto-loads enabled marketplace plugins in
+# --print/headless mode; their slash commands report "Unknown command" unless
+# the plugin root is passed explicitly. Auto-discover mounted marketplace
+# plugins and load each via --plugin-dir so /<plugin>:<command> resolves.
+PLUGIN_ARGS=()
+if [ -d /home/node/.claude/plugins/marketplaces ]; then
+    for _pdir in /home/node/.claude/plugins/marketplaces/*/; do
+        if [ -f "${_pdir}.claude-plugin/plugin.json" ]; then
+            PLUGIN_ARGS+=(--plugin-dir "${_pdir%/}")
+        fi
+    done
+fi
+# Pre-quoted form for the sh -c pipe branch (paths are marketplace dir names,
+# no spaces, but quote defensively).
+PLUGIN_STR=""
+if [ ${#PLUGIN_ARGS[@]} -gt 0 ]; then
+    PLUGIN_STR=$(printf ' %q' "${PLUGIN_ARGS[@]}")
+fi
+
 # Check for prompt
 if [ -n "${PROMPT_FILE:-}" ]; then
     echo "Starting headless session..."
     # No trap — exec replaces the shell, so EXIT trap would delete the file before claude reads it
     if [ "$OUTPUT" = "print" ]; then
-        debug_setpriv claude --print -p --model "$MODEL" --verbose
+        debug_setpriv claude --print -p "${PLUGIN_ARGS[@]}" --model "$MODEL" --verbose
         exec setpriv --reuid=node --regid=node --init-groups -- \
-            claude --print -p --dangerously-skip-permissions \
+            claude --print -p --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" \
             --model "$MODEL" --verbose < "$PROMPT_FILE"
     elif [ "$OUTPUT" = "json" ]; then
-        debug_setpriv claude -p --model "$MODEL" --output-format stream-json --verbose
+        debug_setpriv claude -p "${PLUGIN_ARGS[@]}" --model "$MODEL" --output-format stream-json --verbose
         exec setpriv --reuid=node --regid=node --init-groups -- \
-            claude -p --dangerously-skip-permissions \
+            claude -p --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" \
             --model "$MODEL" --output-format stream-json --verbose < "$PROMPT_FILE"
     else
         # exec + pipe requires sh -c; pass MODEL and PROMPT_FILE as positional args to avoid quoting issues
-        debug_setpriv "sh -c 'claude -p --model $MODEL --output-format stream-json --verbose | stream-formatter'"
+        debug_setpriv "sh -c 'claude -p${PLUGIN_STR} --model $MODEL --output-format stream-json --verbose | stream-formatter'"
         # shellcheck disable=SC2016
         exec setpriv --reuid=node --regid=node --init-groups -- \
-            sh -c 'claude -p --dangerously-skip-permissions --model "$1" \
-                   --output-format stream-json --verbose < "$2" \
-                   | python3 /usr/local/bin/stream-formatter.py' \
+            sh -c "claude -p --dangerously-skip-permissions${PLUGIN_STR} --model \"\$1\" \
+                   --output-format stream-json --verbose < \"\$2\" \
+                   | python3 /usr/local/bin/stream-formatter.py" \
             _ "$MODEL" "$PROMPT_FILE"
     fi
 else
