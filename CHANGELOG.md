@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v0.13.3
 
 - fix(dockerfile): add `sharing=locked` to the two apt `--mount=type=cache` blocks so concurrent `linux/amd64` + `linux/arm64` legs of `make build-multiarch` don't collide on `/var/lib/apt/lists/lock` (`E: Could not get lock … held by process 0`, apt exit 100). Build-time-only — does not change image content.
 
