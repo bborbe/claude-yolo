@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v0.13.2
 
 - fix(entrypoint): auto-discover mounted marketplace plugins and pass `--plugin-dir` for each on every headless `claude` invocation. Claude Code 2.1.197 (pinned since v0.13.1) stopped auto-loading enabled marketplace plugins in `--print`/headless mode, so plugin slash commands (e.g. `/dark-factory:generate-prompts-for-spec`, `/dark-factory:audit-prompt`) reported `Unknown command` and broke dark-factory's spec→prompt generation and prompt auditing. Prompt execution was unaffected (no slash commands). Fixes generation/auditing for all consumers (coding, dark-factory, openbrain, semantic-search, vault-cli) without pinning Claude Code back.
 
