@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat: bump `@anthropic-ai/claude-code` from `2.1.197` to `2.1.219`. Deliberate pin bump per the Dockerfile procedure — smoke-tested against a freshly built image before tagging. Updates the known-good baseline used across all consumers (coding, dark-factory, openbrain, semantic-search, vault-cli).
+
 ## v0.13.3
 
 - fix(dockerfile): add `sharing=locked` to the two apt `--mount=type=cache` blocks so concurrent `linux/amd64` + `linux/arm64` legs of `make build-multiarch` don't collide on `/var/lib/apt/lists/lock` (`E: Could not get lock … held by process 0`, apt exit 100). Build-time-only — does not change image content.
