@@ -11,7 +11,7 @@ ARG TZ
 # new claude-yolo release; smoke-test by running a dark-factory spec
 # generation against the new image.
 ARG CLAUDE_CODE_VERSION=2.1.233
-ARG GO_VERSION=1.26.6
+ARG GO_VERSION=1.27.0
 ARG TARGETARCH
 ARG UPDATER_VERSION=0.23.2
 ARG ASTGREP_VERSION=latest

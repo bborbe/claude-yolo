@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- fix: bump `GO_VERSION` from `1.26.6` to `1.27.0` (Go minor release). Keeps the image toolchain in step with the fleet so `go generate` mocks and `go.mod` toolchain directives don't mismatch inside dark-factory containers.
+
 ## v0.15.0
 
 - feat: bump `@anthropic-ai/claude-code` from `2.1.219` to `2.1.233`. Deliberate pin bump per the Dockerfile procedure — smoke-tested against a freshly built image before tagging. Updates the known-good baseline used across all consumers (coding, dark-factory, openbrain, semantic-search, vault-cli).
