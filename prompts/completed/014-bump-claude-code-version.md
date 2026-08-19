@@ -1,6 +1,6 @@
 ---
 status: completed
-spec: ["002"]
+spec: [002-bump-claude-code-2-1-197]
 summary: 'Bumped CLAUDE_CODE_VERSION from 2.1.169 to 2.1.197 in Dockerfile, refreshed pin-comment to name 2.1.197 as known-good, added ## Unreleased CHANGELOG entry with feat: prefix citing Sonnet 5/1M-token/background-agent/healthcheck rationale'
 execution_id: claude-yolo-bump-claude-code-exec-014-bump-claude-code-version
 dark-factory-version: dev
