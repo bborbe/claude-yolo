@@ -102,7 +102,11 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/home/node/.local/bin:${PATH}"
 
 # Install updater tool via uv
-RUN /home/node/.local/bin/uv tool install git+https://github.com/bborbe/updater@v${UPDATER_VERSION}
+# Force HTTP/1.1: git 2.39.5 (node:22) fails against GitHub's HTTP/2 smart-HTTP
+# with "expected flush after ref listing", then falls back to a credentials
+# prompt the build cannot answer — broke every image build from 2026-09-02.
+RUN git config --global http.version HTTP/1.1 && \
+  /home/node/.local/bin/uv tool install git+https://github.com/bborbe/updater@v${UPDATER_VERSION}
 
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
   go install github.com/onsi/ginkgo/v2/ginkgo@latest && \
