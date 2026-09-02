@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- fix: force git HTTP/1.1 in the image build. `node:22`'s git 2.39.5 fails against GitHub's HTTP/2 smart-HTTP with `expected flush after ref listing`, then asks for credentials the build cannot answer — breaking every `make build-multiarch` from 2026-09-02 (v0.15.2 was cut but never pushed).
+
 ## v0.15.2
 
 - fix: bump `GO_VERSION` from `1.27.0` to `1.27.1` (Go patch release). Keeps the image toolchain in step with the fleet so `go generate` mocks and `go.mod` toolchain directives don't mismatch inside dark-factory containers.
