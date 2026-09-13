@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat: bump `@anthropic-ai/claude-code` from `2.1.233` to `2.1.270`. Deliberate pin bump per the Dockerfile procedure — smoke-tested against a freshly built image before tagging. Updates the known-good baseline used across all consumers (coding, dark-factory, openbrain, semantic-search, vault-cli).
+
 ## v0.15.3
 
 - fix: force git HTTP/1.1 in the image build. `node:22`'s git 2.39.5 fails against GitHub's HTTP/2 smart-HTTP with `expected flush after ref listing`, then asks for credentials the build cannot answer — breaking every `make build-multiarch` from 2026-09-02 (v0.15.2 was cut but never pushed).
