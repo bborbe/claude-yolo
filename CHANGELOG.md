@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat: Bump pinned claude-code from 2.1.270 to 2.1.280
+
 ## v0.16.0
 
 - feat: bump `@anthropic-ai/claude-code` from `2.1.233` to `2.1.270`. Deliberate pin bump per the Dockerfile procedure — smoke-tested against a freshly built image before tagging. Updates the known-good baseline used across all consumers (coding, dark-factory, openbrain, semantic-search, vault-cli).
