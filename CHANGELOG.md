@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- fix: add `bsdextrautils` to the image so the `column` binary is present. The bborbe Go repos' `vulncheck` Makefile target pipes govulncheck's JSON through `column` to render its report; without it `make precommit` could not complete inside the container, so a dark-factory run started, executed, and landed unverified. `column` is not provided by `util-linux` on the bookworm base.
+
 ## v0.16.1
 
 - feat: Bump pinned claude-code from 2.1.270 to 2.1.280
