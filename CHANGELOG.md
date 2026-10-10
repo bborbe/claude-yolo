@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v0.16.3
+
+- chore: bump the pinned Go toolchain from 1.27.1 to 1.27.2. The image installs Go from `go.dev/dl` via `ARG GO_VERSION`, so this pin is what decides the toolchain every consumer container builds with — it is the half of the Go 1.27.2 cycle that containers actually see. The companion change is the dark-factory `DefaultContainerImage` pin, which follows this release and closes the claude-yolo ↔ dark-factory mismatch window.
+
 ## v0.16.2
 
 - fix: add `bsdextrautils` to the image so the `column` binary is present. The bborbe Go repos' `vulncheck` Makefile target pipes govulncheck's JSON through `column` to render its report; without it the target died with `/bin/sh: N: column: not found` in place of the table naming the vulnerable module and its fixed version. The exit code is 1 either way, so what the missing binary destroys is the diagnostic, not the verdict — an actionable security finding reduced to an opaque tooling error. `column` is not provided by `util-linux` on the bookworm base.
