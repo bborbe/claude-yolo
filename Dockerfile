@@ -21,10 +21,11 @@ ENV TZ="${TZ:-Europe/Berlin}"
 # Install dev tools + firewall deps
 # `bsdextrautils` provides `column`, which the bborbe Go repos' `vulncheck`
 # Makefile target pipes govulncheck's JSON through to render its report.
-# Without it `make precommit` cannot complete inside the container, so a
-# dark-factory run starts, executes, and lands unverified. On the bookworm
-# base it is NOT provided by util-linux; `bsdmainutils` is only the
-# transitional metapackage that pulls it in.
+# Without it the target dies with `/bin/sh: N: column: not found` in place
+# of the table naming the vulnerable module and its fixed version. The exit
+# code is 1 either way — what is lost is the diagnostic, not the verdict.
+# On the bookworm base `column` is NOT provided by util-linux; `bsdmainutils`
+# is only the transitional metapackage that pulls it in.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 	--mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
 	apt-get update && apt-get install -y --no-install-recommends \

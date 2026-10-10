@@ -10,7 +10,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-- fix: add `bsdextrautils` to the image so the `column` binary is present. The bborbe Go repos' `vulncheck` Makefile target pipes govulncheck's JSON through `column` to render its report; without it `make precommit` could not complete inside the container, so a dark-factory run started, executed, and landed unverified. `column` is not provided by `util-linux` on the bookworm base.
+- fix: add `bsdextrautils` to the image so the `column` binary is present. The bborbe Go repos' `vulncheck` Makefile target pipes govulncheck's JSON through `column` to render its report; without it the target died with `/bin/sh: N: column: not found` in place of the table naming the vulnerable module and its fixed version. The exit code is 1 either way, so what the missing binary destroys is the diagnostic, not the verdict — an actionable security finding reduced to an opaque tooling error. `column` is not provided by `util-linux` on the bookworm base.
 
 ## v0.16.1
 
