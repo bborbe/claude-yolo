@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat: build the image on a Kubernetes cluster with `make build BUILD_TARGET=<cluster> REF=<sha> VERSION=<tag>`, keeping the default local arm unchanged. `hack/build-cluster.sh`, `hack/cluster-alias.sh` and `hack/build-job.yaml` are vendored from `bborbe/agent-task-executor`
+- fix: `build-multiarch` refuses to run when `BUILD_TARGET` is not `local`, instead of silently falling back to a local build. The cluster Job builds `linux/amd64` only, so a multi-arch cluster arm would be a lie
+
 ## v0.16.4
 
 - chore: bump the pinned Go toolchain from 1.27.2 to 1.27.3. The image installs Go from `go.dev/dl` via `ARG GO_VERSION`, so this pin is what decides the toolchain every consumer container builds with — it is the half of the Go 1.27.3 cycle that containers actually see. The companion change is the dark-factory `DefaultContainerImage` pin, which follows this release.
