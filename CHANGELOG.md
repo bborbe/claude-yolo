@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v0.17.0
 
 - feat: build the image on a Kubernetes cluster with `make build BUILD_TARGET=<cluster> REF=<sha> VERSION=<tag>`, keeping the default local arm unchanged. `hack/build-cluster.sh`, `hack/cluster-alias.sh` and `hack/build-job.yaml` are vendored from `bborbe/agent-task-executor`
 - fix: `build-multiarch` refuses to run when `BUILD_TARGET` is not `local`, instead of silently falling back to a local build. The cluster Job builds `linux/amd64` only, so a multi-arch cluster arm would be a lie
