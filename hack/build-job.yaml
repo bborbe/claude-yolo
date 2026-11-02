@@ -1,0 +1,174 @@
+# Parameterized BuildKit build Job.
+#
+# Rendered and applied by the release-to-image dispatcher when this repo is
+# released, and by `hack/build-cluster.sh` when `make build` runs with a
+# BUILD_TARGET other than `local`. The default local arm does not use it:
+# `make build` with no BUILD_TARGET still builds with plain `docker build`.
+#
+# This file lives outside k8s/ on purpose: everything under k8s/ is deploy
+# state reached through `make apply`, so a template kept there would be adopted
+# as such.
+#
+# Template tokens:
+#   __JOB_NAME__           Job name, derived from __TAG__ and sanitized for DNS
+#   __REPO_URL__           git URL to clone
+#   __REF__                git ref (branch, tag or commit) to build
+#   __TAG__                image tag to push
+#   __DOCKERFILE__         Dockerfile path inside the repository
+#   __IMAGE__              target image repository, without tag
+#   __PUSH__               "true" to push the built image
+#   __PUSH_SECRET__        name of the dockerconfigjson secret to mount
+#   __DEADLINE_SECONDS__   Job deadline in seconds
+#   __SOURCE_DATE_EPOCH__  commit timestamp, decimal seconds
+#
+# Prerequisite (not created by this manifest): a kubernetes.io/dockerconfigjson
+# secret in the build namespace, named by __PUSH_SECRET__, holding a credential
+# that may push to the target registry.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: __JOB_NAME__
+  namespace: build
+  labels:
+    app.kubernetes.io/name: image-build
+    app.kubernetes.io/component: build
+    app.kubernetes.io/version: "__TAG__"
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: __DEADLINE_SECONDS__
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: image-build
+        app.kubernetes.io/component: build
+        app.kubernetes.io/version: "__TAG__"
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      initContainers:
+        - name: clone
+          image: alpine/git:v2.54.0@sha256:e8ceedc73bd80992ae8d58a7d24c58b8322146c354f1d2e81a97db4452068ec0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              git init -q /src
+              git -C /src remote add origin "$1"
+              git -C /src fetch -q --depth=1 --tags origin "$2"
+              git -C /src checkout -q --detach FETCH_HEAD
+              git -C /src log -1 --format=%ct > /meta/source-date-epoch
+              git -C /src log -1 --format=%cI > /meta/source-date-iso
+              git -C /src rev-parse --short HEAD > /meta/git-commit
+              git -C /src describe --tags --always --dirty > /meta/git-version
+              echo "cloned $1 at $2: $(git -C /src rev-parse HEAD) epoch=$(cat /meta/source-date-epoch) version=$(cat /meta/git-version)"
+            - clone
+            - "__REPO_URL__"
+            - "__REF__"
+          env:
+            - name: GIT_CONFIG_COUNT
+              value: "1"
+            - name: GIT_CONFIG_KEY_0
+              value: safe.directory
+            - name: GIT_CONFIG_VALUE_0
+              value: /src
+          # Memory requests are deliberately small: the build node runs at ~98%
+          # of its request capacity, and a pod asking for a GiB of scheduling
+          # headroom to do a few hundred MiB of work never schedules there.
+          # The limits are the real constraint; a request is only a hint.
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          # Hardened like any other container: the clone needs to write /src and
+          # /meta and nothing else, so it keeps no capability and cannot escalate.
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: src
+              mountPath: /src
+            - name: meta
+              mountPath: /meta
+      containers:
+        - name: build
+          image: moby/buildkit:v0.34.1-rootless@sha256:f68752a5a94acfcdad2d07867b7075601a421638e17fc5f28efc1c814d0c4f89
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              cloned_epoch="$(cat /meta/source-date-epoch)"
+              if [ "${cloned_epoch}" != "__SOURCE_DATE_EPOCH__" ]; then
+                echo "REF __REF__ is commit epoch ${cloned_epoch} in the cluster but __SOURCE_DATE_EPOCH__ in the local repository; run git fetch and retry" >&2
+                exit 1
+              fi
+              buildctl-daemonless.sh build \
+                --frontend dockerfile.v0 \
+                --local context=/src \
+                --local dockerfile=/src \
+                --opt filename=__DOCKERFILE__ \
+                --opt platform=linux/amd64 \
+                --opt build-arg:SOURCE_DATE_EPOCH=__SOURCE_DATE_EPOCH__ \
+                --opt build-arg:BUILD_GIT_VERSION="$(cat /meta/git-version)" \
+                --opt build-arg:BUILD_GIT_COMMIT="$(cat /meta/git-commit)" \
+                --opt build-arg:BUILD_DATE="$(cat /meta/source-date-iso)" \
+                --opt build-arg:DOCKER_REGISTRY=docker.io \
+                --metadata-file /meta/metadata.json \
+                --output type=image,name=__IMAGE__:__TAG__,push=__PUSH__,rewrite-timestamp=true
+              cat /meta/metadata.json
+          env:
+            - name: BUILDKITD_FLAGS
+              value: "--oci-worker-no-process-sandbox"
+            - name: DOCKER_CONFIG
+              value: "/docker-config"
+          # Unconfined here is deliberate and is NOT an oversight left over from
+          # the init containers above: rootless buildkitd with
+          # --oci-worker-no-process-sandbox needs both profiles relaxed to run
+          # nested containers. Tightening them breaks every build; the
+          # unprivileged uid and the dropped capabilities are the boundary.
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            seccompProfile:
+              type: Unconfined
+            appArmorProfile:
+              type: Unconfined
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          volumeMounts:
+            - name: src
+              mountPath: /src
+            - name: meta
+              mountPath: /meta
+            # Container-internal path, not a host path: rootless buildkitd writes its
+            # state to $HOME/.local/share/buildkit inside the image, and needs it
+            # writable. Not a self-containment violation.
+            - name: buildkitd
+              mountPath: /home/user/.local/share/buildkit
+            - name: docker-config
+              mountPath: /docker-config
+              readOnly: true
+      volumes:
+        - name: src
+          emptyDir: {}
+        - name: meta
+          emptyDir: {}
+        - name: buildkitd
+          emptyDir: {}
+        - name: docker-config
+          secret:
+            secretName: __PUSH_SECRET__
+            items:
+              - key: .dockerconfigjson
+                path: config.json
