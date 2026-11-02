@@ -53,9 +53,19 @@ spec:
           args:
             - |
               set -eu
+              # A private repository needs a read credential. The token secret is
+              # optional: when it is absent the clone runs anonymously, which is
+              # what every public repo in this fleet relies on. When present the
+              # credential is used only for this fetch and never written into the
+              # clone's git config, so it cannot leak into the build context.
+              url="$1"
+              if [ -s /git-credential/token ]; then
+                url="$(printf '%s' "$1" | sed -e "s|^https://|https://x-access-token:$(cat /git-credential/token)@|")"
+              fi
               git init -q /src
-              git -C /src remote add origin "$1"
+              git -C /src remote add origin "$url"
               git -C /src fetch -q --depth=1 --tags origin "$2"
+              git -C /src remote set-url origin "$1"
               git -C /src checkout -q --detach FETCH_HEAD
               git -C /src log -1 --format=%ct > /meta/source-date-epoch
               git -C /src log -1 --format=%cI > /meta/source-date-iso
@@ -96,6 +106,9 @@ spec:
               mountPath: /src
             - name: meta
               mountPath: /meta
+            - name: git-credential
+              mountPath: /git-credential
+              readOnly: true
       containers:
         - name: build
           image: moby/buildkit:v0.34.1-rootless@sha256:f68752a5a94acfcdad2d07867b7075601a421638e17fc5f28efc1c814d0c4f89
@@ -110,7 +123,7 @@ spec:
               fi
               buildctl-daemonless.sh build \
                 --frontend dockerfile.v0 \
-                --local context=/src \
+                --local context=__CONTEXT__ \
                 --local dockerfile=/src \
                 --opt filename=__DOCKERFILE__ \
                 --opt platform=linux/amd64 \
@@ -135,10 +148,17 @@ spec:
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
+            # Unconfined is deliberate and is NOT an oversight: rootless buildkitd
+            # with --oci-worker-no-process-sandbox needs both profiles relaxed to
+            # run nested containers. What bounds it is the unprivileged uid plus the
+            # dropped capabilities and disabled privilege escalation below.
             seccompProfile:
               type: Unconfined
             appArmorProfile:
               type: Unconfined
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 500m
@@ -156,10 +176,26 @@ spec:
             # writable. Not a self-containment violation.
             - name: buildkitd
               mountPath: /home/user/.local/share/buildkit
+            # ⚠️ TRUST BOUNDARY. This is the registry push credential, and it sits in
+            # the same container that executes the repo's Dockerfile steps: with
+            # --oci-worker-no-process-sandbox those steps run in buildkitd's own
+            # namespace, so a Dockerfile can read this file. That is acceptable only
+            # because REF is chosen by the operator and these repositories are the
+            # operator's own. Two consequences follow, and both are requirements:
+            #   1. The secret must hold a registry token scoped to pushing these
+            #      images — never an account-wide credential.
+            #   2. Do not point REF at an untrusted fork or contributor branch.
             - name: docker-config
               mountPath: /docker-config
               readOnly: true
       volumes:
+        # Optional on purpose: a cluster without this secret still builds every
+        # public repo, and a private one fails loudly at the clone instead of
+        # silently running unauthenticated.
+        - name: git-credential
+          secret:
+            secretName: git-clone
+            optional: true
         - name: src
           emptyDir: {}
         - name: meta
