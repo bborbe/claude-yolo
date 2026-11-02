@@ -14,19 +14,6 @@ NAMESPACE="${NAMESPACE:-build}"
 PUSH="${PUSH:-true}"
 TIMEOUT="${TIMEOUT:-3600}"
 DOCKERFILE="${DOCKERFILE:-Dockerfile}"
-
-# The build context is the repository root by default. A repo whose image lives in
-# a subdirectory (website: blog/, gateway/) sets SUBDIR so BuildKit's context
-# becomes /src/<subdir>; without it `COPY package.json` in a nested Dockerfile
-# resolves against the repo root and fails.
-SUBDIR="${SUBDIR:-}"
-if [ -n "${SUBDIR}" ]; then
-	printf '%s' "${SUBDIR}" | grep -qE '^[A-Za-z0-9._/-]+$' ||
-		die "SUBDIR '${SUBDIR}' contains characters outside [A-Za-z0-9._/-]"
-	BUILD_CONTEXT="/src/${SUBDIR}"
-else
-	BUILD_CONTEXT="/src"
-fi
 DOCKER_REGISTRY="${DOCKER_REGISTRY:-docker.io}"
 
 die() {
@@ -38,6 +25,23 @@ require() {
 	local name="$1"
 	[ -n "${!name:-}" ] || die "${name} is required; pass it on the make command line"
 }
+
+# The build context is the repository root by default. A repo whose image lives in
+# a subdirectory (website: blog/, gateway/) sets SUBDIR so BuildKit's context
+# becomes /src/<subdir>; without it `COPY package.json` in a nested Dockerfile
+# resolves against the repo root and fails. Defined here, not above, because it
+# calls die().
+SUBDIR="${SUBDIR:-}"
+if [ -n "${SUBDIR}" ]; then
+	printf '%s' "${SUBDIR}" | grep -qE '^[A-Za-z0-9._/-]+$' ||
+		die "SUBDIR '${SUBDIR}' contains characters outside [A-Za-z0-9._/-]"
+	case "/${SUBDIR}/" in
+	*/../*) die "SUBDIR '${SUBDIR}' must not contain '..'" ;;
+	esac
+	BUILD_CONTEXT="/src/${SUBDIR}"
+else
+	BUILD_CONTEXT="/src"
+fi
 
 # BUILD_TARGET is resolved to a kubeconfig file and context by cluster-alias.sh,
 # which also defines the kc() helper every kubectl call goes through.
