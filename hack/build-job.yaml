@@ -54,18 +54,25 @@ spec:
             - |
               set -eu
               # A private repository needs a read credential. The token secret is
-              # optional: when it is absent the clone runs anonymously, which is
-              # what every public repo in this fleet relies on. When present the
-              # credential is used only for this fetch and never written into the
-              # clone's git config, so it cannot leak into the build context.
-              url="$1"
-              if [ -s /git-credential/token ]; then
-                url="$(printf '%s' "$1" | sed -e "s|^https://|https://x-access-token:$(cat /git-credential/token)@|")"
-              fi
+              # optional: when it is absent the clone runs anonymously, which is what
+              # every public repo in this fleet relies on.
+              #
+              # The token travels in an Authorization header, never in the URL. A URL
+              # credential would be written into .git/config and recorded verbatim in
+              # .git/FETCH_HEAD, and /src is the same volume the build container reads —
+              # a Dockerfile doing `COPY . /workspace` would copy the token into the
+              # build. The header keeps every on-disk reference clean, and FETCH_HEAD is
+              # removed anyway as a belt-and-braces measure.
               git init -q /src
-              git -C /src remote add origin "$url"
-              git -C /src fetch -q --depth=1 --tags origin "$2"
-              git -C /src remote set-url origin "$1"
+              git -C /src remote add origin "$1"
+              if [ -s /git-credential/token ]; then
+                auth="$(printf 'x-access-token:%s' "$(cat /git-credential/token)" | base64 | tr -d '\n')"
+                git -C /src -c "http.extraHeader=Authorization: Basic ${auth}" fetch -q --depth=1 --tags origin "$2"
+              else
+                git -C /src fetch -q --depth=1 --tags origin "$2"
+              fi
+              git -C /src checkout -q --detach FETCH_HEAD
+              rm -f /src/.git/FETCH_HEAD
               git -C /src checkout -q --detach FETCH_HEAD
               git -C /src log -1 --format=%ct > /meta/source-date-epoch
               git -C /src log -1 --format=%cI > /meta/source-date-iso
