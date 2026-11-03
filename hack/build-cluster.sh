@@ -4,7 +4,8 @@
 # Called from `make build BUILD_TARGET=<sun|nukedev|nukeprod|kubectl-context>`
 # (Makefile.docker) with
 # BUILD_TARGET, NAMESPACE, REPO_URL, REF, TAG, DOCKERFILE, IMAGE, PUSH,
-# PUSH_SECRET and TIMEOUT in the environment. Not intended to be run by hand.
+# PUSH_SECRET, TIMEOUT and the optional SUBDIR in the environment. Not intended
+# to be run by hand.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,6 +32,11 @@ require() {
 # becomes /src/<subdir>; without it `COPY package.json` in a nested Dockerfile
 # resolves against the repo root and fails. Defined here, not above, because it
 # calls die().
+#
+# SUBDIR moves the CONTEXT only. DOCKERFILE stays relative to the repository
+# root, so a nested Dockerfile is passed as `blog/Dockerfile` even with
+# SUBDIR=blog — the default `Dockerfile` means /src/Dockerfile, which is the
+# repo root, not the subdirectory.
 SUBDIR="${SUBDIR:-}"
 if [ -n "${SUBDIR}" ]; then
 	printf '%s' "${SUBDIR}" | grep -qE '^[A-Za-z0-9._/-]+$' ||
@@ -45,6 +51,7 @@ fi
 
 # BUILD_TARGET is resolved to a kubeconfig file and context by cluster-alias.sh,
 # which also defines the kc() helper every kubectl call goes through.
+# shellcheck disable=SC1091  # cluster-alias.sh is linted as its own input
 source "${SCRIPT_DIR}/cluster-alias.sh"
 
 # The equivalent invocation for messages the operator has to retype.
@@ -63,6 +70,12 @@ require PUSH_SECRET
 # outside the whitelist is rejected, never escaped.
 printf '%s' "${REF}" | grep -qE '^[A-Za-z0-9._/-]+$' ||
 	die "REF '${REF}' contains characters outside [A-Za-z0-9._/-]"
+# A leading dash would be parsed as a git option rather than a refspec. The
+# template passes `--` before the refspec as well; this rejects it outright so
+# the failure is a clear message instead of an argument-parsing surprise.
+case "${REF}" in
+-*) die "REF '${REF}' must not start with '-'" ;;
+esac
 printf '%s' "${TAG}" | grep -qE '^[A-Za-z0-9._-]+$' ||
 	die "TAG '${TAG}' contains characters outside [A-Za-z0-9._-]"
 printf '%s' "${IMAGE}" | grep -qE '^[A-Za-z0-9._/:-]+$' ||
