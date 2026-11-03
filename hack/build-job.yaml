@@ -66,14 +66,19 @@ spec:
               git init -q /src
               git -C /src remote add origin "$1"
               if [ -s /git-credential/token ]; then
+                # The header goes into a throwaway git config rather than `git -c`,
+                # which would put the credential on argv where /proc/<pid>/cmdline
+                # exposes it to every process in the pod.
                 auth="$(printf 'x-access-token:%s' "$(cat /git-credential/token)" | base64 | tr -d '\n')"
-                git -C /src -c "http.extraHeader=Authorization: Basic ${auth}" fetch -q --depth=1 --tags origin "$2"
+                cfg="$(mktemp)"
+                printf '[http]\n\textraHeader = Authorization: Basic %s\n' "${auth}" > "${cfg}"
+                GIT_CONFIG_GLOBAL="${cfg}" git -C /src fetch -q --depth=1 --tags origin "$2"
+                rm -f "${cfg}"
               else
                 git -C /src fetch -q --depth=1 --tags origin "$2"
               fi
               git -C /src checkout -q --detach FETCH_HEAD
               rm -f /src/.git/FETCH_HEAD
-              git -C /src checkout -q --detach FETCH_HEAD
               git -C /src log -1 --format=%ct > /meta/source-date-epoch
               git -C /src log -1 --format=%cI > /meta/source-date-iso
               git -C /src rev-parse --short HEAD > /meta/git-commit
