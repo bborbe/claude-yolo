@@ -14,7 +14,10 @@
 #   __REPO_URL__           git URL to clone
 #   __REF__                git ref (branch, tag or commit) to build
 #   __TAG__                image tag to push
-#   __DOCKERFILE__         Dockerfile path inside the repository
+#   __DOCKERFILE__         Dockerfile path inside the repository, always relative
+#                          to the repository ROOT even when __CONTEXT__ is a
+#                          subdirectory (so a nested Dockerfile is "blog/Dockerfile")
+#   __CONTEXT__            BuildKit build-context directory: /src, or /src/<SUBDIR>
 #   __IMAGE__              target image repository, without tag
 #   __PUSH__               "true" to push the built image
 #   __PUSH_SECRET__        name of the dockerconfigjson secret to mount
@@ -65,17 +68,38 @@ spec:
               # removed anyway as a belt-and-braces measure.
               git init -q /src
               git -C /src remote add origin "$1"
-              if [ -s /git-credential/token ]; then
+              token_file=/git-credential/token
+              # The secret is projected with an explicit `items:` list, so a secret
+              # that exists without the expected key fails the mount loudly. This
+              # branch covers the remaining case: the key present but blank.
+              if [ -e "${token_file}" ] && [ ! -s "${token_file}" ]; then
+                echo "ERROR: ${token_file} exists but is empty — the git-clone secret" >&2
+                echo "       has a blank token value. Fix the secret or delete it." >&2
+                exit 1
+              fi
+              if [ -s "${token_file}" ]; then
+                # Never offer a credential over a plaintext hop.
+                case "$1" in
+                  https://*) ;;
+                  *) echo "ERROR: refusing to send a clone credential to a non-https" >&2
+                     echo "       REPO_URL ($1). Use https:// or remove the token." >&2
+                     exit 1 ;;
+                esac
                 # The header goes into a throwaway git config rather than `git -c`,
                 # which would put the credential on argv where /proc/<pid>/cmdline
                 # exposes it to every process in the pod.
-                auth="$(printf 'x-access-token:%s' "$(cat /git-credential/token)" | base64 | tr -d '\n')"
-                cfg="$(mktemp)"
-                printf '[http]\n\textraHeader = Authorization: Basic %s\n' "${auth}" > "${cfg}"
-                GIT_CONFIG_GLOBAL="${cfg}" git -C /src fetch -q --depth=1 --tags origin "$2"
+                auth="$(printf 'x-access-token:%s' "$(cat "${token_file}")" | base64 | tr -d '\n')"
+                cfg="$(umask 077; mktemp)"
+                # EXIT covers the `set -e` abort path a failed fetch takes, which
+                # would otherwise leave the credential on disk for the pod's TTL.
+                trap 'rm -f "${cfg}"' EXIT
+                # Scoped to this origin rather than the global [http] section, so a
+                # redirect to another host is never offered the header.
+                printf '[http "%s"]\n\textraHeader = Authorization: Basic %s\n' "$1" "${auth}" > "${cfg}"
+                GIT_CONFIG_GLOBAL="${cfg}" git -C /src fetch -q --depth=1 --tags -- origin "$2"
                 rm -f "${cfg}"
               else
-                git -C /src fetch -q --depth=1 --tags origin "$2"
+                git -C /src fetch -q --depth=1 --tags -- origin "$2"
               fi
               git -C /src checkout -q --detach FETCH_HEAD
               rm -f /src/.git/FETCH_HEAD
@@ -152,25 +176,31 @@ spec:
               value: "--oci-worker-no-process-sandbox"
             - name: DOCKER_CONFIG
               value: "/docker-config"
-          # Unconfined here is deliberate and is NOT an oversight left over from
-          # the init containers above: rootless buildkitd with
+          # Unconfined is deliberate and is NOT an oversight left over from the
+          # init containers above: rootless buildkitd with
           # --oci-worker-no-process-sandbox needs both profiles relaxed to run
-          # nested containers. Tightening them breaks every build; the
-          # unprivileged uid and the dropped capabilities are the boundary.
+          # nested containers. Tightening them breaks every build.
+          #
+          # ⚠️ DO NOT add `allowPrivilegeEscalation: false` or
+          # `capabilities.drop: ["ALL"]` here, however free they look. Both break
+          # every build. buildctl-daemonless.sh runs as uid 1000 and starts
+          # buildkitd through `rootlesskit`, which installs its uid/gid map with
+          # the setuid helpers newuidmap/newgidmap. no_new_privs neutralises the
+          # setuid bit and an empty bounding set strips the CAP_SETUID they need,
+          # so buildkitd never starts and the build dies at the first buildctl
+          # call. Measured on nukedev 2026-11-03:
+          #   [rootlesskit:parent] error: failed to setup UID/GID map:
+          #   newuidmap 40 [0 1000 1 1 100000 65536] failed: :
+          #   fork/exec /usr/bin/newuidmap: operation not permitted
+          # The boundary here is the unprivileged uid plus the trust model
+          # documented on the docker-config mount below, not dropped capabilities.
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
-            # Unconfined is deliberate and is NOT an oversight: rootless buildkitd
-            # with --oci-worker-no-process-sandbox needs both profiles relaxed to
-            # run nested containers. What bounds it is the unprivileged uid plus the
-            # dropped capabilities and disabled privilege escalation below.
             seccompProfile:
               type: Unconfined
             appArmorProfile:
               type: Unconfined
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
           resources:
             requests:
               cpu: 500m
@@ -208,6 +238,12 @@ spec:
           secret:
             secretName: git-clone
             optional: true
+            # Project only the one key. Without `items:` every key in the secret
+            # lands in /git-credential, and a differently-named key would silently
+            # take the anonymous path.
+            items:
+              - key: token
+                path: token
         - name: src
           emptyDir: {}
         - name: meta
