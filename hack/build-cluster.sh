@@ -26,6 +26,23 @@ require() {
 	[ -n "${!name:-}" ] || die "${name} is required; pass it on the make command line"
 }
 
+# The build context is the repository root by default. A repo whose image lives in
+# a subdirectory (website: blog/, gateway/) sets SUBDIR so BuildKit's context
+# becomes /src/<subdir>; without it `COPY package.json` in a nested Dockerfile
+# resolves against the repo root and fails. Defined here, not above, because it
+# calls die().
+SUBDIR="${SUBDIR:-}"
+if [ -n "${SUBDIR}" ]; then
+	printf '%s' "${SUBDIR}" | grep -qE '^[A-Za-z0-9._/-]+$' ||
+		die "SUBDIR '${SUBDIR}' contains characters outside [A-Za-z0-9._/-]"
+	case "/${SUBDIR}/" in
+	*/../*) die "SUBDIR '${SUBDIR}' must not contain '..'" ;;
+	esac
+	BUILD_CONTEXT="/src/${SUBDIR}"
+else
+	BUILD_CONTEXT="/src"
+fi
+
 # BUILD_TARGET is resolved to a kubeconfig file and context by cluster-alias.sh,
 # which also defines the kc() helper every kubectl call goes through.
 source "${SCRIPT_DIR}/cluster-alias.sh"
@@ -71,7 +88,7 @@ esac
 # passes the whitelist on its first line and its remaining lines are injected
 # verbatim by sed into the YAML and the embedded `sh -c` script. Reject embedded
 # newlines for every value before rendering.
-for _var in REF TAG IMAGE REPO_URL DOCKERFILE PUSH_SECRET DOCKER_REGISTRY TIMEOUT NAMESPACE; do
+for _var in REF TAG IMAGE REPO_URL DOCKERFILE SUBDIR PUSH_SECRET DOCKER_REGISTRY TIMEOUT NAMESPACE; do
 	case "${!_var}" in
 	*$'\n'*) die "${_var} contains a newline, which is not allowed" ;;
 	esac
@@ -117,6 +134,7 @@ sed \
 	-e "s|__REF__|${REF}|g" \
 	-e "s|__TAG__|${TAG}|g" \
 	-e "s|__DOCKERFILE__|${DOCKERFILE}|g" \
+	-e "s|__CONTEXT__|${BUILD_CONTEXT}|g" \
 	-e "s|__IMAGE__|${IMAGE}|g" \
 	-e "s|__PUSH__|${PUSH}|g" \
 	-e "s|__PUSH_SECRET__|${PUSH_SECRET}|g" \
