@@ -23,13 +23,19 @@ ifeq ($(origin BUILD_TARGET),undefined)
     BUILD_TARGET := local
     BUILD_TARGET_REASON := sun unreachable: SUN_PROBE=fail
   else
-    BUILD_TARGET_PROBE_OUT := $(shell BUILD_TARGET=sun bash -c 'source hack/cluster-alias.sh && kc --request-timeout=$(BUILD_TARGET_PROBE_TIMEOUT)s get --raw /readyz' 2>&1 | head -1)
+    BUILD_TARGET_PROBE_OUT := $(shell BUILD_TARGET=sun bash -c 'source hack/cluster-alias.sh && kc --request-timeout=$(BUILD_TARGET_PROBE_TIMEOUT)s get --raw /readyz' 2>/dev/null | grep -qx ok && echo ok)
     ifeq ($(BUILD_TARGET_PROBE_OUT),ok)
       BUILD_TARGET := sun
       BUILD_TARGET_REASON := probe ok
+      # The cluster arm needs a REF and a TAG. Default them to what the local arm
+      # would have used -- HEAD and the branch name -- so a bare `make build` keeps
+      # working on a sun-reachable host instead of dying on an empty REF.
+      REF ?= $(shell git rev-parse HEAD)
+      VERSION ?= $(BRANCH)
     else
       BUILD_TARGET := local
-      BUILD_TARGET_REASON := sun unreachable: $(if $(BUILD_TARGET_PROBE_OUT),$(BUILD_TARGET_PROBE_OUT),probe produced no output)
+      BUILD_TARGET_PROBE_ERR := $(shell BUILD_TARGET=sun bash -c 'source hack/cluster-alias.sh && kc --request-timeout=$(BUILD_TARGET_PROBE_TIMEOUT)s get --raw /readyz' 2>&1 >/dev/null | head -1)
+      BUILD_TARGET_REASON := sun unreachable: $(if $(BUILD_TARGET_PROBE_ERR),$(BUILD_TARGET_PROBE_ERR),probe failed)
     endif
   endif
   $(info build target: $(BUILD_TARGET) ($(BUILD_TARGET_REASON)))
