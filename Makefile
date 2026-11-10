@@ -27,11 +27,13 @@ ifeq ($(origin BUILD_TARGET),undefined)
     ifeq ($(BUILD_TARGET_PROBE_OUT),ok)
       BUILD_TARGET := sun
       BUILD_TARGET_REASON := probe ok
-      # The cluster arm needs a REF and a TAG. Default them to what the local arm
-      # would have used -- HEAD and the branch name -- so a bare `make build` keeps
-      # working on a sun-reachable host instead of dying on an empty REF.
+      # The cluster arm needs a REF and a TAG. Default them so a bare `make build`
+      # keeps working on a sun-reachable host: REF to HEAD, TAG to a slash-free
+      # scratch tag derived from the branch and the commit. Never the bare branch
+      # name -- `hack/build-cluster.sh` rejects a TAG containing `/`, and a cluster
+      # build must never overwrite a moving tag such as `:master`.
       REF ?= $(shell git rev-parse HEAD)
-      VERSION ?= $(BRANCH)
+      VERSION ?= $(subst /,-,$(BRANCH))-$(shell git rev-parse --short HEAD)
     else
       BUILD_TARGET := local
       BUILD_TARGET_PROBE_ERR := $(shell BUILD_TARGET=sun bash -c 'source hack/cluster-alias.sh && kc --request-timeout=$(BUILD_TARGET_PROBE_TIMEOUT)s get --raw /readyz' 2>&1 >/dev/null | head -1)
