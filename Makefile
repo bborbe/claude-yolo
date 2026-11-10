@@ -5,7 +5,37 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo late
 # Which machine builds the image. `local` builds here with the local daemon; any
 # other value is a cluster alias (sun, nukedev, nukeprod) or a raw kubectl
 # context name, and the build runs as a Job there.
-BUILD_TARGET ?= local
+# Unset BUILD_TARGET resolves automatically: a bounded `kubectl get --raw /readyz`
+# probe through hack/cluster-alias.sh picks sun when it answers and the local
+# daemon when it does not. An explicit BUILD_TARGET always wins and the probe is
+# never run. SUN_PROBE=fail short-circuits the probe to "unreachable", so the
+# fallback can be exercised without touching the cluster:
+#   make -n build SUN_PROBE=fail
+#
+# The probe is cheap where sun is absent: with no sun kubeconfig on the host,
+# kubectl fails immediately, so CI pays nothing. It costs the timeout only on a
+# machine that holds the kubeconfig but cannot reach the cluster.
+BUILD_TARGET_PROBE_TIMEOUT ?= 5
+SUN_PROBE ?=
+
+ifeq ($(origin BUILD_TARGET),undefined)
+  ifeq ($(SUN_PROBE),fail)
+    BUILD_TARGET := local
+    BUILD_TARGET_REASON := sun unreachable: SUN_PROBE=fail
+  else
+    BUILD_TARGET_PROBE_OUT := $(shell BUILD_TARGET=sun bash -c 'source hack/cluster-alias.sh && kc --request-timeout=$(BUILD_TARGET_PROBE_TIMEOUT)s get --raw /readyz' 2>&1 | head -1)
+    ifeq ($(BUILD_TARGET_PROBE_OUT),ok)
+      BUILD_TARGET := sun
+      BUILD_TARGET_REASON := probe ok
+    else
+      BUILD_TARGET := local
+      BUILD_TARGET_REASON := sun unreachable: $(if $(BUILD_TARGET_PROBE_OUT),$(BUILD_TARGET_PROBE_OUT),probe produced no output)
+    endif
+  endif
+  $(info build target: $(BUILD_TARGET) ($(BUILD_TARGET_REASON)))
+else
+  $(info build target: $(BUILD_TARGET) (explicit))
+endif
 
 # Cluster-build inputs. The vendored cluster script defaults the namespace,
 # timeout and Dockerfile; the clone URL, tag and image come from this repository.
