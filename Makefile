@@ -27,6 +27,11 @@ ifeq ($(origin BUILD_TARGET),undefined)
     ifeq ($(BUILD_TARGET_PROBE_OUT),ok)
       BUILD_TARGET := sun
       BUILD_TARGET_REASON := probe ok
+      # No REF/VERSION default on this arm, deliberately: a Makefile-level default
+      # gives VERSION origin `file`, which the cluster arm's guard rejects, and a
+      # branch name carrying `/` is rejected by hack/build-cluster.sh. A cluster
+      # build is invoked as `make build VERSION=<tag>`; the local fallback stays
+      # available via BUILD_TARGET=local.
     else
       BUILD_TARGET := local
       BUILD_TARGET_PROBE_ERR := $(shell BUILD_TARGET=sun bash -c 'source hack/cluster-alias.sh && kc --request-timeout=$(BUILD_TARGET_PROBE_TIMEOUT)s get --raw /readyz' 2>&1 >/dev/null | head -1)
